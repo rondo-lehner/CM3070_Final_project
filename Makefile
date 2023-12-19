@@ -7,13 +7,8 @@
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
-<<<<<<< HEAD
 PROJECT_NAME = CM3070_Final-project
 PYTHON_INTERPRETER = python3
-=======
-PROJECT_NAME = CM3070_Final_project
-PYTHON_INTERPRETER = python
->>>>>>> 659df5381de457ac1e7f05e6fa5835d7776f8841
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -21,15 +16,12 @@ else
 HAS_CONDA=True
 endif
 
-<<<<<<< HEAD
 ## export dotenv variables
 ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
 
-=======
->>>>>>> 659df5381de457ac1e7f05e6fa5835d7776f8841
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
@@ -37,34 +29,27 @@ endif
 ## Install Python Dependencies
 requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-<<<<<<< HEAD
 	$(PYTHON_INTERPRETER) -m pip install -r requirements_ext.txt
 
 # ## Make Dataset
 # data: requirements
 # 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
-=======
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
->>>>>>> 659df5381de457ac1e7f05e6fa5835d7776f8841
+## Make Base Dataset
+base_data: requirements
+	$(PYTHON_INTERPRETER) src/data/make_base.py data/raw data/processed
+
 
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
-<<<<<<< HEAD
 ## Download Deep Globe Data 2018
 download_deep_globe: requirements
 	kaggle datasets download -d balraj98/deepglobe-land-cover-classification-dataset -p data/external --unzip
-=======
-## Lint using flake8
-lint:
-	flake8 src
->>>>>>> 659df5381de457ac1e7f05e6fa5835d7776f8841
+
+
 
 ## Upload Data to S3
 sync_data_to_s3:
