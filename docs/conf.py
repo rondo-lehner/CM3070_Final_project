@@ -164,7 +164,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CM3070_Final-projectdoc'
+htmlhelp_basename = 'CM3070_Final_projectdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -184,7 +184,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ('index',
-     'CM3070_Final-project.tex',
+     'CM3070_Final_project.tex',
      u'CM3070_Final_project Documentation',
      u"Rondo Lehner", 'manual'),
 ]
@@ -215,7 +215,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'CM3070_Final-project', u'CM3070_Final_project Documentation',
+    ('index', 'CM3070_Final_project', u'CM3070_Final_project Documentation',
      [u"Rondo Lehner"], 1)
 ]
 
@@ -229,9 +229,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'CM3070_Final-project', u'CM3070_Final_project Documentation',
+    ('index', 'CM3070_Final_project', u'CM3070_Final_project Documentation',
      u"Rondo Lehner", 'CM3070_Final_project',
-     'UoL BSc Computer Science Final Project - Land cover classification on Deep Globe 2018 dataset', 'Miscellaneous'),
+     'later', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
