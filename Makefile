@@ -9,6 +9,7 @@ BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = CM3070_Final-project
 PYTHON_INTERPRETER = python3
+SHELL := /bin/bash
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -47,7 +48,17 @@ clean:
 
 ## Download Deep Globe Data 2018
 download_deep_globe: requirements
+	rm -r data/external/*
+	touch .gitkeep
 	kaggle datasets download -d balraj98/deepglobe-land-cover-classification-dataset -p data/external --unzip
+	mv data/external/train data/external/images
+	for f in data/external/images/*.jpg; do mv $$f $${f//_sat/}; done
+
+	mkdir data/external/annotations
+	mv data/external/images/*_mask.png data/external/annotations
+	for f in data/external/annotations/*.png; do mv $$f $${f//_mask/}; done
+
+
 
 
 
