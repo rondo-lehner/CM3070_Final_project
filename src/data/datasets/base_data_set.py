@@ -26,18 +26,20 @@ class Builder(tfds.core.GeneratorBasedBuilder):
 
   def _split_generators(self, dl_manager):
     """Returns splits."""
-    # Download images and annotations that come in separate archives.
-    # Note, that the extension of archives is .tar.gz even though the actual
-    # archives format is uncompressed tar.
-    dl_paths = dl_manager.download_and_extract({
-        "images": _BASE_URL + "/images.tar.gz",
-        "annotations": _BASE_URL + "/annotations.tar.gz",
-    })
+    # # Download images and annotations that come in separate archives.
+    # # Note, that the extension of archives is .tar.gz even though the actual
+    # # archives format is uncompressed tar.
+    # dl_paths = dl_manager.download_and_extract({
+    #     "images": _BASE_URL + "/images.tar.gz",
+    #     "annotations": _BASE_URL + "/annotations.tar.gz",
+    # })
 
-    images_path_dir = os.path.join(dl_paths["images"], "images")
-    annotations_path_dir = os.path.join(dl_paths["annotations"], "annotations")
+    # images_path_dir = os.path.join(dl_paths["images"], "images")
+    # annotations_path_dir = os.path.join(dl_paths["annotations"], "annotations")
 
     # Setup train and test splits
+
+    # TODO: https://stackoverflow.com/a/64006242 split folders before reading them in
     train_split = tfds.core.SplitGenerator(
         name="train",
         gen_kwargs={
