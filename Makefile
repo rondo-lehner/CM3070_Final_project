@@ -57,6 +57,10 @@ download_deep_globe: requirements
 	mv data/external/images/*_mask.png data/external/annotations
 	for f in data/external/annotations/*.png; do mv $$f $${f//_mask/}; done
 
+## Test Deep Globe Dataset
+test_dataset: requirements
+	$(PYTHON_INTERPRETER) src/data/test_dataset.py
+
 ## Upload Data to S3
 sync_data_to_s3:
 ifeq (default,$(PROFILE))

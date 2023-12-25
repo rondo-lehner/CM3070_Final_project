@@ -41,7 +41,7 @@ class Builder(tfds.core.GeneratorBasedBuilder):
     annotations_path_dir = dl_manager.manual_dir / "annotations"
     
 
-    # Defining 'all' split as per tf guide: https://www.tensorflow.org/datasets/add_dataset#specifying_dataset_splits
+    # Defining single 'all' split as per tf guide: https://www.tensorflow.org/datasets/add_dataset#specifying_dataset_splits
     return {
       'all_images': self._generate_examples(images_path_dir, annotations_path_dir)
     }
