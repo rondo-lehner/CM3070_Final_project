@@ -16,6 +16,7 @@ def main():
     logger.info('Loading deep globe dataset')
 
     ds, ds_info = tfds.load(
+        # Useful link: https://github.com/tensorflow/datasets/issues/2680#issuecomment-778801923
         name='deep_globe_2018',
         download=False,
         with_info=True
