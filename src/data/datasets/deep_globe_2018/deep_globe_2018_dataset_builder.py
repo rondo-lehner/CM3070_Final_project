@@ -16,9 +16,11 @@ class Builder(tfds.core.GeneratorBasedBuilder):
     # TODO(deep_globe_2018): Specifies the tfds.core.DatasetInfo object
     return self.dataset_info_from_configs(
         features=tfds.features.FeaturesDict({
-            # These are the features of your dataset like images, labels ...
-            'image': tfds.features.Image(shape=(None, None, 3)),
-            'label': tfds.features.ClassLabel(names=['no', 'yes']),
+            "image": tfds.features.Image(),
+            "file_name": tfds.features.Text(),
+            "segmentation_mask": tfds.features.Image(
+                shape=(None, None, 1), use_colormap=True
+            )
         }),
         # If there's a common (input, target) tuple from the
         # features, specify them here. They'll be used if
