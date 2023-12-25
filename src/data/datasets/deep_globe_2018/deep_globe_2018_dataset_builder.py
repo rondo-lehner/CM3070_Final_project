@@ -43,7 +43,7 @@ class Builder(tfds.core.GeneratorBasedBuilder):
 
     # Defining 'all' split as per tf guide: https://www.tensorflow.org/datasets/add_dataset#specifying_dataset_splits
     return {
-        'all': self._generate_examples(images_path_dir, annotations_path_dir),
+      'all_images': self._generate_examples(images_path_dir, annotations_path_dir)
     }
 
   def _generate_examples(self, images_path_dir, annotations_path_dir):
