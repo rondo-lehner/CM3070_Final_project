@@ -6,6 +6,11 @@ import tensorflow_datasets as tfds
 class Builder(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for deep_globe_2018 dataset."""
 
+  
+  MANUAL_DOWNLOAD_INSTRUCTIONS = """
+    Run `make download_deep_globe` in this project.
+    Specify custom manual_dir: `tfds_build --manual_dir=/workspaces/CM3070_Final_project/data/external/` 
+    """
   VERSION = tfds.core.Version('1.0.0')
   RELEASE_NOTES = {
       '1.0.0': 'Initial release.',
@@ -31,8 +36,11 @@ class Builder(tfds.core.GeneratorBasedBuilder):
 
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):
     """Returns SplitGenerators."""
-    # TODO(deep_globe_2018): Downloads the data and defines the splits
-    path = dl_manager.download_and_extract('https://todo-data-url')
+    # Makes use of manual path as specified in tf guide: https://www.tensorflow.org/datasets/add_dataset#manual_download_and_extraction
+    # Specify paths similar to oxford_iiit_pet dataset: https://github.com/tensorflow/datasets/blob/master/tensorflow_datasets/datasets/oxford_iiit_pet/oxford_iiit_pet_dataset_builder.py
+    images_path_dir = dl_manager.manual_dir / "images"
+    annotations_path_dir = dl_manager.manual_dir / "annotations"
+    
 
     # TODO(deep_globe_2018): Returns the Dict[split names, Iterator[Key, Example]]
     return {
