@@ -18,7 +18,6 @@ class Builder(tfds.core.GeneratorBasedBuilder):
 
   def _info(self) -> tfds.core.DatasetInfo:
     """Returns the dataset metadata."""
-    # TODO(deep_globe_2018): Specifies the tfds.core.DatasetInfo object
     return self.dataset_info_from_configs(
         features=tfds.features.FeaturesDict({
             "image": tfds.features.Image(),
@@ -42,16 +41,23 @@ class Builder(tfds.core.GeneratorBasedBuilder):
     annotations_path_dir = dl_manager.manual_dir / "annotations"
     
 
-    # TODO(deep_globe_2018): Returns the Dict[split names, Iterator[Key, Example]]
+    # Defining 'all' split as per tf guide: https://www.tensorflow.org/datasets/add_dataset#specifying_dataset_splits
     return {
-        'train': self._generate_examples(path / 'train_imgs'),
+        'all': self._generate_examples(images_path_dir, annotations_path_dir),
     }
 
-  def _generate_examples(self, path):
+  def _generate_examples(self, images_path_dir, annotations_path_dir):
     """Yields examples."""
-    # TODO(deep_globe_2018): Yields (key, example) tuples from the dataset
-    for f in path.glob('*.jpeg'):
-      yield 'key', {
-          'image': f,
-          'label': 'yes',
+
+    for f in images_path_dir.glob('*.jpg'):
+      image_number = f.stem
+      image_name = f.name
+      annotation_name = f.stem + ".png"
+
+      record = {
+        "image": f,
+        "file_name": image_name,
+        "segmentation_mask": annotations_path_dir / annotation_name
       }
+
+      yield image_name, record
