@@ -38,7 +38,7 @@ requirements: test_environment
 
 ## Make Base Dataset
 base_data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_base.py data/raw data/processed
+	$(PYTHON_INTERPRETER) src/data/make_base.py data/external
 
 
 ## Delete all compiled Python files
@@ -48,8 +48,7 @@ clean:
 
 ## Download Deep Globe Data 2018
 download_deep_globe: requirements
-	rm -r data/external/*
-	touch .gitkeep
+	rm -f data/external/*
 	kaggle datasets download -d balraj98/deepglobe-land-cover-classification-dataset -p data/external --unzip
 	mv data/external/train data/external/images
 	for f in data/external/images/*.jpg; do mv $$f $${f//_sat/}; done
@@ -57,10 +56,6 @@ download_deep_globe: requirements
 	mkdir data/external/annotations
 	mv data/external/images/*_mask.png data/external/annotations
 	for f in data/external/annotations/*.png; do mv $$f $${f//_mask/}; done
-
-
-
-
 
 ## Upload Data to S3
 sync_data_to_s3:
