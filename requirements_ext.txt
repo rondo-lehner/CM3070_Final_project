@@ -5,3 +5,4 @@
 python-dotenv>=0.5.1
 kaggle
 click
+jupyterlab
