@@ -57,6 +57,11 @@ download_deep_globe: requirements
 	mv data/external/images/*_mask.png data/external/annotations
 	for f in data/external/annotations/*.png; do mv $$f $${f//_mask/}; done
 
+## Build Deep Globe Data 2018
+## Make sture to run 'download_deep_globe' if no files in data/external. Look for /images and /annotations
+build_deep_globe: requirements
+	tfds build src/data/datasets/deep_globe_2018 --manual_dir=data/external
+
 ## Test Deep Globe Dataset
 test_dataset: requirements
 	$(PYTHON_INTERPRETER) src/data/test_dataset.py
