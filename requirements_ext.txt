@@ -5,4 +5,7 @@
 python-dotenv>=0.5.1
 kaggle
 click
+
+# for exploration in notebooks
 jupyterlab
+matplotlib
