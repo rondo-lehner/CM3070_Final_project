@@ -22,9 +22,7 @@ class Builder(tfds.core.GeneratorBasedBuilder):
         features=tfds.features.FeaturesDict({
             "image": tfds.features.Image(),
             "file_name": tfds.features.Text(),
-            "segmentation_mask": tfds.features.Image(
-                shape=(None, None, 1), use_colormap=True
-            )
+            "segmentation_mask": tfds.features.Image()
         }),
         # If there's a common (input, target) tuple from the
         # features, specify them here. They'll be used if
