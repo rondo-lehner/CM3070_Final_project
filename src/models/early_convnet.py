@@ -2,11 +2,11 @@ import keras
 import tensorflow as tf
 import src.layers.subsampling as subsampling
 
-class EarlyConvnet(keras.Model):
+class EarlyConvnet(keras.Model): # TODO: change to tf.keras.Model
     # TODO: implement EarlyConvent model (current state is as per: https://www.tensorflow.org/guide/keras/making_new_layers_and_models_via_subclassing#the_model_class)
 
     def __init__(self, num_classes=7):
-        super().__init__()
+        super(EarlyConvnet, self).__init__()
         ## Layers:
         # I0 - Input: assuming 40 x 40 x 3
         ## C1 - 7x7 convolution kernel (6 Feature maps @ 34 x 34)
@@ -77,3 +77,7 @@ class EarlyConvnet(keras.Model):
         x = self.S4(x)
         x = self.C5(x)
         return self.F6(x)
+
+    def build_graph(self, raw_shape):
+        x = keras.Input(shape=raw_shape)
+        return keras.Model(inputs=[x], outputs=self.call(x))
