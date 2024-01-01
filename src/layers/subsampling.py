@@ -85,10 +85,9 @@ class Subsampling(Layer):
         if len(input_shape) != 4:
             raise SubsamplingArgumentError(
                 f"`len(input_shape)` != 4; received: {input_shape}")
-        ## TODO: Uncomment if possible and resolve cause of this error being thrown in model when calling prediction
-        # if input_shape[0] is not None:    
-        #     raise SubsamplingArgumentError(
-        #         f"`input_shape[0] must be None; received: {input_shape}")
+        if input_shape[0] is not None:    
+            raise SubsamplingArgumentError(
+                f"`input_shape[0] must be None; received: {input_shape}")
 
         in_chan = input_shape[3]
 
