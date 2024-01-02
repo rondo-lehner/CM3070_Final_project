@@ -93,11 +93,13 @@ class Subsampling(Layer):
 
         self.w = self.add_weight(shape=(1, 1, in_chan),
                                  initializer="random_normal",
-                                 trainable=True)
+                                 trainable=True,
+                                 name='subsampling_w')
 
         self.b = self.add_weight(shape=(1, 1, in_chan),
                                  initializer="random_normal",
-                                 trainable=True)
+                                 trainable=True,
+                                 name='subsampling_b')
 
     def call(self, inputs: tf.Tensor) -> tf.Tensor:
         """Computes subsampling value: `w * (sum of window entries) + b`."""
