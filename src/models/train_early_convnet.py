@@ -19,13 +19,13 @@ IMAGE_SIZE = 612
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
 PATCH_STRIDE = 32
-SLICE_TRAIN = ':7'
-SLICE_VALID = '7:9'
-SLICE_TEST = '9:10'
+SLICE_TRAIN = ':70'
+SLICE_VALID = '70:90'
+SLICE_TEST = '90:100'
 
 # Training
-EPOCHS = 3
-CHECKPOINT_FILEPATH = os.path.join('../models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{val_loss:.2f}.ckpt')
+EPOCHS = 4
+CHECKPOINT_FILEPATH = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{val_loss:.2f}.ckpt')
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
