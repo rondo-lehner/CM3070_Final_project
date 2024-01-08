@@ -16,7 +16,7 @@ from src.models import early_convnet
 BATCH_SIZE_IMAGES = 1
 BATCH_SIZE_PATCHES = 1
 IMAGE_SIZE = 612
-PATCH_SIZE = 80
+PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
 PATCH_STRIDE = 32
 SLICE_TRAIN = ':7'
@@ -24,7 +24,7 @@ SLICE_VALID = '7:9'
 SLICE_TEST = '9:10'
 
 # Training
-EPOCHS = 2
+EPOCHS = 3
 CHECKPOINT_FILEPATH = os.path.join('../models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{val_loss:.2f}.ckpt')
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
@@ -107,8 +107,11 @@ def load_patches_labels(datapoint, image_size, patch_size, patch_size_annotation
         pixel_category_idx,
         depth = 7, # TODO: make depth configurable
         on_value = 1,
-        off_value = -1
+        off_value = 0
     )
+
+    pixel_category_one_hot = tf.expand_dims(pixel_category_one_hot, axis=1)
+    pixel_category_one_hot = tf.expand_dims(pixel_category_one_hot, axis=1)
 
     return img_patches_flat, pixel_category_one_hot
 
@@ -155,6 +158,33 @@ def main():
     logger.info('Starting training...')
 
     split_train, split_valid, split_test = load_processed_splits()
+
+    loss_fn = tf.keras.losses.CategoricalCrossentropy()
+    optimizer = tf.keras.optimizers.Adam()
+
+    model = early_convnet.EarlyConvnet()
+    model.build((None, PATCH_SIZE, PATCH_SIZE, 3))
+    model.compile(
+        optimizer = optimizer,
+        loss = loss_fn,
+        metrics = ['mse', tf.keras.metrics.CategoricalCrossentropy(name='cce')]
+    )
+
+    model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=CHECKPOINT_FILEPATH,
+        save_weights_only=True,
+        monitor='val_cce',
+        save_freq='epoch'
+    )
+
+    model.fit(
+        split_train,
+        epochs=EPOCHS,
+        validation_data=split_valid,
+        class_weight=CLASS_WEIGHTS,
+        callbacks=[model_checkpoint_callback]
+    )
+
 
     logger.info('splits loaded.')
 
