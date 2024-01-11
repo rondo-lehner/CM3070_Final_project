@@ -61,5 +61,5 @@ Project Organization
 * Install latest version of aws-cli: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 * Configure aws cli: https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html
 * Login to ECR: https://github.com/aws/deep-learning-containers 
-    * `aws ecr get-login-password --region eu-central-2 | docker login --username AWS --password-stdin 380420809688.dkr.ecr.eu-central-2.amazonaws.com`
+    * `aws ecr get-login-password --region eu-central-2 --profile rondo_ec2_lrg | docker login --username AWS --password-stdin 380420809688.dkr.ecr.eu-central-2.amazonaws.com`
 
