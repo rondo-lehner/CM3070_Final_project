@@ -55,3 +55,10 @@ Project Organization
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+## Reminder when using new EC2 instance
+* Install docker engine: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+* Install latest version of aws-cli: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+* Configure aws cli: https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html
+* Login to ECR: https://github.com/aws/deep-learning-containers
+
