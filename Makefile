@@ -66,6 +66,10 @@ build_deep_globe: requirements
 test_dataset: requirements
 	$(PYTHON_INTERPRETER) src/data/test_dataset.py
 
+## Run train script for the early convnet model
+train_model_1: 
+	$(PYTHON_INTERPRETER) src/models/train_early_convnet.py
+
 ## Upload Data to S3
 sync_data_to_s3:
 ifeq (default,$(PROFILE))
