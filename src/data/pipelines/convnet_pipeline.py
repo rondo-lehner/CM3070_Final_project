@@ -122,8 +122,8 @@ class ConvnetPipeline():
             ds_train
             .batch(self.batch_size_images)
             .map(lambda x: self.load_patches_labels(x, self.image_size, self.patch_size, self.patch_size_annotation, self.patch_stride), num_parallel_calls=tf.data.AUTOTUNE)
-            .shuffle(buffer_size=10000) # Shuffle entire image batch
             .unbatch() # Flatten the batches for training
+            .shuffle(buffer_size=10000) # Shuffle entire image batch
             .batch(self.batch_size_patches) # Rebatch patches as desired
             .prefetch(buffer_size=tf.data.AUTOTUNE)
         )
