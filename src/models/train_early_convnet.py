@@ -85,7 +85,7 @@ def main():
         log_dir=LOG_DIR,
         histogram_freq=1,
         update_freq=UPDATE_FREQ,
-        write_images=True
+        write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
     )
 
     logger.info('Created model, starting training...')
