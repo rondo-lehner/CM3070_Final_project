@@ -4,6 +4,7 @@ import tensorflow as tf
 
 import src.data.pipelines.convnet_pipeline as convnet_pipeline
 import os
+import datetime
 import click
 import logging
 
@@ -26,6 +27,7 @@ SLICE_TEST = '2:3'
 # Training
 EPOCHS = 4
 CHECKPOINT_FILEPATH = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{val_loss:.2f}.ckpt')
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
@@ -56,6 +58,8 @@ def main():
         PATCH_STRIDE
     )
 
+    logger.info('Created input pipeline.')
+
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
     optimizer = tf.keras.optimizers.Adam()
 
@@ -74,16 +78,24 @@ def main():
         save_freq='epoch'
     )
 
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+        log_dir=LOG_DIR,
+        histogram_freq=1,
+        update_freq=1000,
+        write_images=True
+    )
+
+    logger.info('Created model, starting training...')
+
     model.fit(
         input_pipeline.train,
         epochs=EPOCHS,
         validation_data=input_pipeline.valid,
         class_weight=CLASS_WEIGHTS,
-        callbacks=[model_checkpoint_callback]
+        callbacks=[model_checkpoint_callback, tensorboard_callback]
     )
 
-
-    logger.info('splits loaded.')
+    logger.info('Training completed.')
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
