@@ -19,15 +19,14 @@ BATCH_SIZE_PATCHES = 1
 IMAGE_SIZE = 612
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
-PATCH_STRIDE = 32
-SLICE_TRAIN = ':1'
-SLICE_VALID = '1:2'
-SLICE_TEST = '2:3'
+PATCH_STRIDE = 20
+SLICE_TRAIN = ':20'
+SLICE_VALID = '20:22'
+SLICE_TEST = '22:30'
 
 # Training
-EPOCHS = 4
+EPOCHS = 6
 CHECKPOINT_FILEPATH = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{val_loss:.2f}.ckpt')
-LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
@@ -37,6 +36,10 @@ CLASS_WEIGHTS = {
         5: 9.244,    # barren_land
         6: 100.       # unknown - Note: not to scale with respect to the others but not that important for the overall classification
 }
+
+# Tensorboard
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+UPDATE_FREQ = 1000
 
 ## MAIN FUNCTION
 
@@ -81,7 +84,7 @@ def main():
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=LOG_DIR,
         histogram_freq=1,
-        update_freq=1000,
+        update_freq=UPDATE_FREQ,
         write_images=True
     )
 
