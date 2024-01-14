@@ -16,13 +16,13 @@ from src.models import early_convnet
 # Pipeline
 BATCH_SIZE_IMAGES = 1
 BATCH_SIZE_PATCHES = 1
-IMAGE_SIZE = 612
+IMAGE_SIZE = 2448
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
 PATCH_STRIDE = 20
-SLICE_TRAIN = ':20'
-SLICE_VALID = '20:22'
-SLICE_TEST = '22:30'
+SLICE_TRAIN = ':1'
+SLICE_VALID = ':1'
+SLICE_TEST = '1:2'
 
 # Training
 EPOCHS = 6
@@ -39,7 +39,7 @@ CLASS_WEIGHTS = {
 
 # Tensorboard
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-UPDATE_FREQ = 1000
+UPDATE_FREQ = 10000
 
 ## MAIN FUNCTION
 
