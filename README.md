@@ -59,9 +59,11 @@ Project Organization
 ## Reminder when using new EC2 instance
 * Move AWS keypair: {file_name}.pem file to ~/.ssh/ (chmod 400 {file_name}.pem)
 * Install docker engine: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository 
-    * Don't forget post installation steps: https://docs.docker.com/engine/install/linux-postinstall/
+    * Don't forget post installation steps: https://docs.docksudo usermod -aG docker $USERer.com/engine/install/linux-postinstall/
+* Install unzip `sudo apt install unzip` for aws cli installation
 * Install latest version of aws-cli: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 * Configure aws cli: https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html
 * Login to ECR: https://github.com/aws/deep-learning-containers 
     * `aws ecr get-login-password --region eu-central-2 --profile [PROFILE_NAME] | docker login --username AWS --password-stdin 380420809688.dkr.ecr.eu-central-2.amazonaws.com`
+* Install 'screen'  `sudo apt install screen`
 
