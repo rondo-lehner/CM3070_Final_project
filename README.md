@@ -57,6 +57,7 @@ Project Organization
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
 ## Reminder when using new EC2 instance
+* Move AWS keypair: {file_name}.pem file to ~/.ssh/ (chmod 400 {file_name}.pem)
 * Install docker engine: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository 
     * Don't forget post installation steps: https://docs.docker.com/engine/install/linux-postinstall/
 * Install latest version of aws-cli: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
