@@ -25,8 +25,9 @@ SLICE_VALID = '70%:85%'
 SLICE_TEST = '85%:'
 
 # Training
-EPOCHS = 6
+EPOCHS = 2
 CHECKPOINT_FILEPATH = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{val_loss:.2f}.ckpt')
+SAVE_FREQ = 732050 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
@@ -39,7 +40,7 @@ CLASS_WEIGHTS = {
 
 # Tensorboard
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-UPDATE_FREQ = 10000
+UPDATE_FREQ = 14641 # currently updates after every image 
 
 ## MAIN FUNCTION
 
@@ -78,7 +79,7 @@ def main():
         filepath=CHECKPOINT_FILEPATH,
         save_weights_only=True,
         monitor='val_cce',
-        save_freq='epoch'
+        save_freq=SAVE_FREQ
     )
 
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
