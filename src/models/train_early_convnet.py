@@ -42,6 +42,8 @@ CLASS_WEIGHTS = {
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 UPDATE_FREQ = 14641 # currently updates after every image 
 
+## TODO: Attempt to fix creeping memory consumption. try: https://stackoverflow.com/questions/53683164/keras-occupies-an-indefinitely-increasing-amount-of-memory-for-each-epoch
+
 ## MAIN FUNCTION
 
 def main():
