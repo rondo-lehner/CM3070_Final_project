@@ -20,14 +20,15 @@ BATCH_SIZE_PATCHES = 1
 IMAGE_SIZE = 2448
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
-PATCH_STRIDE = 20
-SLICE_TRAIN = ':5'
-SLICE_VALID = '5:8'
-SLICE_TEST = '700:720'
+PATCH_STRIDE = 30
+SLICE_TRAIN = ':70%'
+SLICE_VALID = '70%:85%'
+SLICE_TEST = '85:'
 
 # Training
-EPOCHS = 6
-CHECKPOINT_FILEPATH = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{batch}.ckpt')
+EPOCHS = 5
+CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet')
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, 'weights.{epoch:02d}-{batch}.ckpt')
 SAVE_FREQ = 732050 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
@@ -38,6 +39,7 @@ CLASS_WEIGHTS = {
         5: 9.244,    # barren_land
         6: 100.       # unknown - Note: not to scale with respect to the others but not that important for the overall classification
 }
+LOAD_WEIGHTS = True
 
 # Tensorboard
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
@@ -99,6 +101,12 @@ def main():
         update_freq=UPDATE_FREQ,
         write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
     )
+
+    if LOAD_WEIGHTS:
+        latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
+        logger.info(f'Loading weights from: {latest}')
+        model.load_weights(latest)
+
 
     logger.info('Created model, starting training...')
 
