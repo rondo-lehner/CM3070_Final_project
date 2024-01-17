@@ -4,6 +4,7 @@ import tensorflow as tf
 
 import src.data.pipelines.convnet_pipeline as convnet_pipeline
 import os
+import gc
 import datetime
 import click
 import logging
@@ -20,12 +21,12 @@ IMAGE_SIZE = 2448
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
 PATCH_STRIDE = 20
-SLICE_TRAIN = ':70%'
-SLICE_VALID = '70%:85%'
-SLICE_TEST = '85%:'
+SLICE_TRAIN = ':5'
+SLICE_VALID = '5:8'
+SLICE_TEST = '700:720'
 
 # Training
-EPOCHS = 2
+EPOCHS = 6
 CHECKPOINT_FILEPATH = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet', 'weights.{epoch:02d}-{batch}.ckpt')
 SAVE_FREQ = 732050 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
 CLASS_WEIGHTS = {
@@ -42,7 +43,15 @@ CLASS_WEIGHTS = {
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 UPDATE_FREQ = 14641 # currently updates after every image 
 
-## TODO: Attempt to fix creeping memory consumption. try: https://stackoverflow.com/questions/53683164/keras-occupies-an-indefinitely-increasing-amount-of-memory-for-each-epoch
+## TODO: Attempt to fix creeping memory consumption.
+#   * try: https://stackoverflow.com/questions/53683164/keras-occupies-an-indefinitely-increasing-amount-of-memory-for-each-epoch
+#   * also try: https://github.com/tensorflow/tensorflow/issues/37505#issuecomment-643685221
+#   * or maybe: https://github.com/tensorflow/tensorflow/issues/37505#issuecomment-806472122
+
+class ClearMemoryOnEndEpoch(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        gc.collect()
+        tf.keras.backend.clear_session()
 
 ## MAIN FUNCTION
 
@@ -98,7 +107,8 @@ def main():
         epochs=EPOCHS,
         validation_data=input_pipeline.valid,
         class_weight=CLASS_WEIGHTS,
-        callbacks=[model_checkpoint_callback, tensorboard_callback]
+        callbacks=[model_checkpoint_callback, tensorboard_callback, ClearMemoryOnEndEpoch()],
+        workers=0
     )
 
     logger.info('Training completed.')
