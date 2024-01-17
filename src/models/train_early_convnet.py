@@ -15,21 +15,21 @@ from src.models import early_convnet
 
 ## Parameters
 # Pipeline
-BATCH_SIZE_IMAGES = 1
+BATCH_SIZE_IMAGES = 4       # Shuffle patches from multiple images
 BATCH_SIZE_PATCHES = 1
 IMAGE_SIZE = 2448
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
 PATCH_STRIDE = 30
-SLICE_TRAIN = ':1'
+SLICE_TRAIN = ':70%'
 SLICE_VALID = '70%:85%'
-SLICE_TEST = '85:'
+SLICE_TEST = '85%:'           # 
 
 # Training
-EPOCHS = 5
+EPOCHS = 6
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet')
 CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, 'weights.{epoch:02d}-{batch}.ckpt')
-SAVE_FREQ = 327550 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
+SAVE_FREQ = 131020 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
@@ -39,7 +39,7 @@ CLASS_WEIGHTS = {
         5: 9.244,    # barren_land
         6: 100.       # unknown - Note: not to scale with respect to the others but not that important for the overall classification
 }
-LOAD_WEIGHTS = True
+LOAD_WEIGHTS = False
 
 # Tensorboard
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
@@ -115,7 +115,7 @@ def main():
         epochs=EPOCHS,
         validation_data=input_pipeline.valid,
         class_weight=CLASS_WEIGHTS,
-        callbacks=[model_checkpoint_callback, tensorboard_callback, ClearMemoryOnEndEpoch()],
+        callbacks=[model_checkpoint_callback, tensorboard_callback],
         workers=0
     )
 
