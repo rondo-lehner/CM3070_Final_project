@@ -68,7 +68,6 @@ test_dataset: requirements
 
 ## Run train script for the early convnet model
 train_model_1: requirements
-	rm -rf models/logs/early_convnet/
 	$(PYTHON_INTERPRETER) src/models/train_early_convnet.py
 
 ## Upload Data to S3
