@@ -15,7 +15,7 @@ from src.models import early_convnet
 
 ## Parameters
 # Pipeline
-BATCH_SIZE_IMAGES = 4       # Shuffle patches from multiple images
+BATCH_SIZE_IMAGES = 3       # Shuffle patches from multiple images
 BATCH_SIZE_PATCHES = 1
 IMAGE_SIZE = 2448
 PATCH_SIZE = 40
@@ -78,7 +78,7 @@ def main():
     logger.info('Created input pipeline.')
 
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
-    optimizer = tf.keras.optimizers.Adam()
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
     model = early_convnet.EarlyConvnet()
     model.build((None, PATCH_SIZE, PATCH_SIZE, 3))
@@ -115,8 +115,7 @@ def main():
         epochs=EPOCHS,
         validation_data=input_pipeline.valid,
         class_weight=CLASS_WEIGHTS,
-        callbacks=[model_checkpoint_callback, tensorboard_callback],
-        workers=0
+        callbacks=[model_checkpoint_callback, tensorboard_callback]
     )
 
     logger.info('Training completed.')
