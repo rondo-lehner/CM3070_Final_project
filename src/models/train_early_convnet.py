@@ -28,7 +28,7 @@ SLICE_TEST = '85%:'           #
 # Training
 EPOCHS = 6
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet')
-CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, 'weights.{epoch:02d}-{batch}.ckpt')
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, 'weights_lr10e-4.{epoch:02d}-{batch}.ckpt')
 SAVE_FREQ = 131020 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
