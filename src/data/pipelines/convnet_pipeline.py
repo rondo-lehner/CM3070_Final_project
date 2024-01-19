@@ -66,7 +66,7 @@ class ConvnetPipeline():
         mode = y[tf.argmax(count)]
         return mode
 
-    def load_patches_labels(self, datapoint, image_size, patch_size, patch_size_annotation, stride):
+    def load_patches_labels(self, datapoint, image_size, patch_size, patch_size_annotation, stride, test=False):
         crop_fraction = patch_size_annotation / patch_size
         
         images = tf.image.resize(datapoint['image'], (image_size, image_size))
@@ -109,7 +109,10 @@ class ConvnetPipeline():
         pixel_category_one_hot = tf.expand_dims(pixel_category_one_hot, axis=1)
         pixel_category_one_hot = tf.expand_dims(pixel_category_one_hot, axis=1)
 
-        return img_patches_flat, pixel_category_one_hot
+        if test:
+            return img_patches_flat, pixel_category_one_hot, images
+        else:
+            return img_patches_flat, pixel_category_one_hot
 
     def load_processed_splits(self, slice_train, slice_valid, slice_test):
         (ds_train, ds_valid, ds_test), ds_info = tfds.load(
@@ -121,11 +124,11 @@ class ConvnetPipeline():
         train_batches = (
             ds_train
             .cache()
-            .shuffle(buffer_size=50, reshuffle_each_iteration=True)
+            .shuffle(buffer_size=20, reshuffle_each_iteration=True)
             .batch(self.batch_size_images)
             .map(lambda x: self.load_patches_labels(x, self.image_size, self.patch_size, self.patch_size_annotation, self.patch_stride), num_parallel_calls=tf.data.AUTOTUNE)
             .unbatch() # Flatten the batches for training
-            .shuffle(buffer_size=20000) # Shuffle entire image batch
+            .shuffle(buffer_size=10000) # Shuffle entire image batch
             .batch(self.batch_size_patches) # Rebatch patches as desired
             .prefetch(buffer_size=tf.data.AUTOTUNE)
         )
@@ -140,7 +143,7 @@ class ConvnetPipeline():
         test_batches = (
             ds_test
             .batch(1)
-            .map(lambda x: self.load_patches_labels(x, self.image_size, self.patch_size, self.patch_size_annotation, self.patch_stride), num_parallel_calls=tf.data.AUTOTUNE)
+            .map(lambda x: self.load_patches_labels(x, self.image_size, self.patch_size, self.patch_size_annotation, self.patch_stride, True), num_parallel_calls=tf.data.AUTOTUNE)
             ## unbatching not required for testing
             # .unbatch() # Flatten the batches for training
             # .batch(batch_size_patches) # Rebatch patches as desired

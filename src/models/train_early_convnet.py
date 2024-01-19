@@ -15,12 +15,12 @@ from src.models import early_convnet
 
 ## Parameters
 # Pipeline
-BATCH_SIZE_IMAGES = 8       # Shuffle patches from multiple images
+BATCH_SIZE_IMAGES = 32       # Shuffle patches from multiple images
 BATCH_SIZE_PATCHES = 1
 IMAGE_SIZE = 224
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
-PATCH_STRIDE = 8
+PATCH_STRIDE = 16
 SLICE_TRAIN = ':70%'
 SLICE_VALID = '70%:85%'
 SLICE_TEST = '85%:'           # 
@@ -30,7 +30,7 @@ EPOCHS = 6
 SAVE_FREQ = 28200 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
 LEARNING_RATE = 0.001
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet')
-CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, f'weights_{LEARNING_RATE:e}' + '.{epoch:02d}-{batch}.ckpt')
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, f'res_224_weights_{LEARNING_RATE:e}' + '.{epoch:02d}-{batch}.ckpt')
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
@@ -40,7 +40,7 @@ CLASS_WEIGHTS = {
         5: 9.244,    # barren_land
         6: 100.       # unknown - Note: not to scale with respect to the others but not that important for the overall classification
 }
-LOAD_WEIGHTS = False
+LOAD_LATEST_WEIGHTS = True
 
 # Tensorboard
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
@@ -103,7 +103,7 @@ def main():
         write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
     )
 
-    if LOAD_WEIGHTS:
+    if LOAD_LATEST_WEIGHTS:
         latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
         logger.info(f'Loading weights from: {latest}')
         model.load_weights(latest)
