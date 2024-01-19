@@ -15,21 +15,22 @@ from src.models import early_convnet
 
 ## Parameters
 # Pipeline
-BATCH_SIZE_IMAGES = 3       # Shuffle patches from multiple images
+BATCH_SIZE_IMAGES = 8       # Shuffle patches from multiple images
 BATCH_SIZE_PATCHES = 1
-IMAGE_SIZE = 2448
+IMAGE_SIZE = 224
 PATCH_SIZE = 40
 PATCH_SIZE_ANNOTATION = 2
-PATCH_STRIDE = 30
+PATCH_STRIDE = 8
 SLICE_TRAIN = ':70%'
 SLICE_VALID = '70%:85%'
 SLICE_TEST = '85%:'           # 
 
 # Training
 EPOCHS = 6
+SAVE_FREQ = 28200 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
+LEARNING_RATE = 0.001
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'early_convnet')
-CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, 'weights_lr10e-4.{epoch:02d}-{batch}.ckpt')
-SAVE_FREQ = 131020 # 'epoch' or integer (saves the model at end of this many batches) | Save weights after every 50 images at full resolution
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, f'weights_{LEARNING_RATE:e}' + '.{epoch:02d}-{batch}.ckpt')
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
@@ -43,7 +44,7 @@ LOAD_WEIGHTS = False
 
 # Tensorboard
 LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'early_convnet', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-UPDATE_FREQ = 6551 # currently updates after every image 
+UPDATE_FREQ = 1128 # currently updates after every image 
 
 ## TODO: Attempt to fix creeping memory consumption.
 #   * try: https://stackoverflow.com/questions/53683164/keras-occupies-an-indefinitely-increasing-amount-of-memory-for-each-epoch
@@ -78,7 +79,7 @@ def main():
     logger.info('Created input pipeline.')
 
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
     model = early_convnet.EarlyConvnet()
     model.build((None, PATCH_SIZE, PATCH_SIZE, 3))
