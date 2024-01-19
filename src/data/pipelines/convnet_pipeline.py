@@ -110,7 +110,7 @@ class ConvnetPipeline():
         pixel_category_one_hot = tf.expand_dims(pixel_category_one_hot, axis=1)
 
         if test:
-            return img_patches_flat, pixel_category_one_hot, images
+            return img_patches_flat, pixel_category_one_hot, images, datapoint['file_name']
         else:
             return img_patches_flat, pixel_category_one_hot
 
