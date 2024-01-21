@@ -1,0 +1,2 @@
+model_checkpoint_path: "res_224_weights_1.000000e-04.10-56400.ckpt"
+all_model_checkpoint_paths: "res_224_weights_1.000000e-04.10-56400.ckpt"
