@@ -6,6 +6,7 @@ import src.data.datasets.deep_globe_2018
 import os
 
 class FcnPipeline():
+    # TODO: consider converting to functional (perhaps this reduces memory consumption)
     def __init__(
         self,
         slice_train=":70%",
