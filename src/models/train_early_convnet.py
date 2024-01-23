@@ -1,5 +1,4 @@
 ## Imports
-import tensorflow_datasets as tfds
 import tensorflow as tf
 
 import src.data.pipelines.convnet_pipeline as convnet_pipeline
