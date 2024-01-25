@@ -13,10 +13,10 @@ from dotenv import find_dotenv, load_dotenv
 from src.models import fcn
 
 ## Pipeline
-SPLIT_TRAIN = ":20"
+SPLIT_TRAIN = ":100"
 SPLIT_VALID = "10:20"
 SPLIT_TEST = "20:30"
-BATCH_SIZE = 1
+BATCH_SIZE = 10
 IMAGE_SIZE = 224
 
 ## Training
@@ -86,31 +86,64 @@ def main():
 
     for epoch in range(EPOCHS):
         print("\nStart of epoch %d" % (epoch,))
+        step = 0
+        p_bar = tf.keras.utils.Progbar(
+            STEPS_PER_EPOCH,
+            width=30,
+            verbose=1,
+            interval=0.05,
+            stateful_metrics=['loss', 'mIoU', 'val_loss', 'val_mIoU'],
+            unit_name='step'
+        )
 
         for (x_train, y_train) in train:
             train_step(fcn_32s, optimizer, loss_object, losses, x_train, y_train)
-            with train_summary_writer.as_default():
-                tf.summary.scalar('loss', losses['train_loss'].result(), step=epoch)
-                tf.summary.scalar('mIoU', losses['train_mIoU'].result(), step=epoch)
+            p_bar.update(
+                step,
+                values=[
+                    ('loss', losses['train_loss'].result()),
+                    ('mIoU', losses['train_mIoU'].result())
+                ]
+            )
+            step += 1
+        with train_summary_writer.as_default():
+            tf.summary.scalar('loss', losses['train_loss'].result(), step=epoch)
+            tf.summary.scalar('mIoU', losses['train_mIoU'].result(), step=epoch)
+            
 
-            for (x_test, y_test) in validation:
-                test_step(fcn_32s, loss_object, losses, x_test, y_test)
-            with test_summary_writer.as_default():
-                tf.summary.scalar('loss', losses['test_loss'].result(), step=epoch)
-                tf.summary.scalar('mIoU', losses['test_mIoU'].result(), step=epoch)
+        for (x_test, y_test) in validation:
+            test_step(fcn_32s, loss_object, losses, x_test, y_test)
+        with test_summary_writer.as_default():
+            tf.summary.scalar('loss', losses['test_loss'].result(), step=epoch)
+            tf.summary.scalar('mIoU', losses['test_mIoU'].result(), step=epoch)
 
-            template = 'Epoch {}, Loss: {}, mIoU: {}, Test Loss: {}, Test mIoU: {}'
-            print (template.format(epoch+1,
-                                    losses['train_loss'].result(), 
-                                    losses['train_mIoU'].result()*100,
-                                    losses['test_loss'].result(), 
-                                    losses['test_mIoU'].result()*100))
+        p_bar.update(
+            step,
+            values=[
+                ('loss', losses['train_loss'].result()),
+                ('mIoU', losses['train_mIoU'].result()),
+                ('val_loss', losses['test_loss'].result()),
+                ('val_mIoU', losses['test_mIoU'].result())
+            ],
+            finalize=True
+        )
+        
 
-            # Reset metrics every epoch
-            losses['train_loss'].reset_states()
-            losses['train_mIoU'].reset_states()
-            losses['test_loss'].reset_states()
-            losses['test_mIoU'].reset_states()
+        # template = 'Epoch {}, Loss: {}, mIoU: {}, Test Loss: {}, Test mIoU: {}'
+        # print (template.format(epoch+1,
+        #                         losses['train_loss'].result(), 
+        #                         losses['train_mIoU'].result()*100,
+        #                         losses['test_loss'].result(), 
+        #                         losses['test_mIoU'].result()*100))
+
+        fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
+
+        # Reset metrics every epoch
+        losses['train_loss'].reset_states()
+        losses['train_mIoU'].reset_states()
+        losses['test_loss'].reset_states()
+        losses['test_mIoU'].reset_states()
+
 
     # history = fcn_32s.fit(train, epochs=EPOCHS,
     #                         steps_per_epoch=STEPS_PER_EPOCH,
@@ -120,6 +153,7 @@ def main():
 
     logger.info('Training completed.')
 
+@tf.function
 def train_step(model, optimizer, loss_object, losses, x_train, y_train):
   with tf.GradientTape() as tape:
     predictions = model(x_train, training=True)
@@ -130,6 +164,7 @@ def train_step(model, optimizer, loss_object, losses, x_train, y_train):
   losses['train_loss'](loss)
   losses['train_mIoU'](y_train, predictions)
 
+@tf.function
 def test_step(model, loss_object, losses, x_test, y_test):
   predictions = model(x_test)
   loss = loss_object(y_test, predictions)
