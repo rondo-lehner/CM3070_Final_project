@@ -16,11 +16,12 @@ from src.models import fcn
 SPLIT_TRAIN = ":100"
 SPLIT_VALID = "10:20"
 SPLIT_TEST = "20:30"
-BATCH_SIZE = 5
+BATCH_SIZE = 20
 IMAGE_SIZE = 224
 
 ## Training
 EPOCHS = 10
+LEARNING_RATE = 1e-4
 VAL_SUBSPLITS = 5
 VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 100 // BATCH_SIZE
@@ -57,7 +58,7 @@ def main():
             write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
         )
 
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
     loss_object = tf.keras.losses.CategoricalCrossentropy()
     # metrics = [loss_object,
     #         tf.keras.metrics.MeanIoU(num_classes=7)]

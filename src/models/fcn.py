@@ -38,6 +38,7 @@ def get_fcn_32s():
     ## We append a 1 × 1 convolution with channel dimension 21 to predict scores for each of the PASCAL classes at each of the coarse output locations
     # Looking at the original implementation there is no explicit activation function: https://github.com/shelhamer/fcn.berkeleyvision.org/blob/master/voc-fcn32s/net.py, last accessed 22.01.2024
     # Hence "linear" is chosen
+    # TODO: make 0-initialized as per Experimental framework of original paper
     block_6_conv3 = tf.keras.layers.Conv2D(
         filters=7,
         kernel_size=(1,1),
