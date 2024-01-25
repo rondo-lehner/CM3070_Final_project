@@ -20,10 +20,10 @@ BATCH_SIZE = 10
 IMAGE_SIZE = 224
 
 ## Training
-EPOCHS = 2
+EPOCHS = 10
 VAL_SUBSPLITS = 5
-VALIDATION_STEPS = 20//BATCH_SIZE//VAL_SUBSPLITS
-STEPS_PER_EPOCH = 20 // BATCH_SIZE
+VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
+STEPS_PER_EPOCH = 100 // BATCH_SIZE
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'fcn_32s')
 CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{batch}.ckpt')
 
@@ -136,7 +136,8 @@ def main():
         #                         losses['test_loss'].result(), 
         #                         losses['test_mIoU'].result()*100))
 
-        fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
+        if (epoch % 5) == 0:
+            fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
 
         # Reset metrics every epoch
         losses['train_loss'].reset_states()
