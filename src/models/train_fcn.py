@@ -13,7 +13,7 @@ from dotenv import find_dotenv, load_dotenv
 from src.models import fcn
 
 ## Pipeline
-SPLIT_TRAIN = ":10"
+SPLIT_TRAIN = ":20"
 SPLIT_VALID = "10:20"
 SPLIT_TEST = "20:30"
 BATCH_SIZE = 1
@@ -21,24 +21,33 @@ IMAGE_SIZE = 224
 
 ## Training
 EPOCHS = 2
-VAL_SUBSPLITS = 2
-VALIDATION_STEPS = 10//BATCH_SIZE//VAL_SUBSPLITS
-STEPS_PER_EPOCH = 10 // BATCH_SIZE
+VAL_SUBSPLITS = 5
+VALIDATION_STEPS = 20//BATCH_SIZE//VAL_SUBSPLITS
+STEPS_PER_EPOCH = 20 // BATCH_SIZE
+CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'fcn_32s')
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{batch}.ckpt')
 
 ## Tensorboard
-LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'fcn_32s', 'fit', datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'fcn_32s')
 UPDATE_FREQ = 1
 
 def main():
     logger = logging.getLogger(__name__)
     logger.info('Starting training...')
 
-    pipeline = fcn_pipeline.FcnPipeline(
+    (train, validation, test) = fcn_pipeline.getFCNPipeline(
         SPLIT_TRAIN,
         SPLIT_VALID,
         SPLIT_TEST,
         BATCH_SIZE,
         IMAGE_SIZE
+    )
+
+    model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=CHECKPOINT_FILEPATH,
+        save_weights_only=True,
+        monitor='val_cce',
+        save_freq='epoch'
     )
 
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
@@ -48,21 +57,85 @@ def main():
             write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
         )
 
-    opt = tf.keras.optimizers.Adam(learning_rate=1e-4)
-    loss = tf.keras.losses.CategoricalCrossentropy()
-    metrics = [loss,
-            tf.keras.metrics.MeanIoU(num_classes=7)]
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+    loss_object = tf.keras.losses.CategoricalCrossentropy()
+    # metrics = [loss_object,
+    #         tf.keras.metrics.MeanIoU(num_classes=7)]
+    # Define our metrics
+
+    ##### Tensorboard (based on https://www.tensorflow.org/tensorboard/get_started)
+    # train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
+    # train_mIoU = tf.keras.metrics.MeanIoU(num_classes=7, name='train_mIoU')
+    # test_loss = tf.keras.metrics.Mean('test_loss', dtype=tf.float32)
+    # test_mIoU = tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU')
+    losses = {
+        'train_loss': tf.keras.metrics.Mean('train_loss', dtype=tf.float32),
+        'train_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='train_mIoU'),
+        'test_loss': tf.keras.metrics.Mean('test_loss', dtype=tf.float32),
+        'test_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU')
+    }
+
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    train_log_dir = os.path.join(LOG_DIR, current_time, 'train')
+    test_log_dir = os.path.join(LOG_DIR, current_time, 'test')
+    train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+    test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
     fcn_32s = fcn.get_fcn_32s()
-    fcn_32s.compile(optimizer=opt, loss=loss, metrics=metrics)
+    # fcn_32s.compile(optimizer=optimizer, loss=loss_object)
 
-    fcn_32s.fit(pipeline.train, epochs=EPOCHS,
-                            steps_per_epoch=STEPS_PER_EPOCH,
-                            validation_steps=VALIDATION_STEPS,
-                            validation_data=pipeline.valid,
-                            callbacks=[tensorboard_callback])
+    for epoch in range(EPOCHS):
+        print("\nStart of epoch %d" % (epoch,))
+
+        for (x_train, y_train) in train:
+            train_step(fcn_32s, optimizer, loss_object, losses, x_train, y_train)
+            with train_summary_writer.as_default():
+                tf.summary.scalar('loss', losses['train_loss'].result(), step=epoch)
+                tf.summary.scalar('mIoU', losses['train_mIoU'].result(), step=epoch)
+
+            for (x_test, y_test) in validation:
+                test_step(fcn_32s, loss_object, losses, x_test, y_test)
+            with test_summary_writer.as_default():
+                tf.summary.scalar('loss', losses['test_loss'].result(), step=epoch)
+                tf.summary.scalar('mIoU', losses['test_mIoU'].result(), step=epoch)
+
+            template = 'Epoch {}, Loss: {}, mIoU: {}, Test Loss: {}, Test mIoU: {}'
+            print (template.format(epoch+1,
+                                    losses['train_loss'].result(), 
+                                    losses['train_mIoU'].result()*100,
+                                    losses['test_loss'].result(), 
+                                    losses['test_mIoU'].result()*100))
+
+            # Reset metrics every epoch
+            losses['train_loss'].reset_states()
+            losses['train_mIoU'].reset_states()
+            losses['test_loss'].reset_states()
+            losses['test_mIoU'].reset_states()
+
+    # history = fcn_32s.fit(train, epochs=EPOCHS,
+    #                         steps_per_epoch=STEPS_PER_EPOCH,
+    #                         # validation_steps=VALIDATION_STEPS,
+    #                         # validation_data=val,
+    #                         callbacks=[tensorboard_callback])
 
     logger.info('Training completed.')
+
+def train_step(model, optimizer, loss_object, losses, x_train, y_train):
+  with tf.GradientTape() as tape:
+    predictions = model(x_train, training=True)
+    loss = loss_object(y_train, predictions)
+  grads = tape.gradient(loss, model.trainable_variables)
+  optimizer.apply_gradients(zip(grads, model.trainable_variables))
+
+  losses['train_loss'](loss)
+  losses['train_mIoU'](y_train, predictions)
+
+def test_step(model, loss_object, losses, x_test, y_test):
+  predictions = model(x_test)
+  loss = loss_object(y_test, predictions)
+
+  losses['test_loss'](loss)
+  losses['test_mIoU'](y_test, predictions)
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
