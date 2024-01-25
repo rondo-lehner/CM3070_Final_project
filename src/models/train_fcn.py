@@ -16,7 +16,7 @@ from src.models import fcn
 SPLIT_TRAIN = ":100"
 SPLIT_VALID = "10:20"
 SPLIT_TEST = "20:30"
-BATCH_SIZE = 10
+BATCH_SIZE = 5
 IMAGE_SIZE = 224
 
 ## Training
@@ -70,9 +70,9 @@ def main():
     # test_mIoU = tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU')
     losses = {
         'train_loss': tf.keras.metrics.Mean('train_loss', dtype=tf.float32),
-        'train_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='train_mIoU'),
+        'train_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='train_mIoU', sparse_y_true=False, sparse_y_pred=False),
         'test_loss': tf.keras.metrics.Mean('test_loss', dtype=tf.float32),
-        'test_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU')
+        'test_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU', sparse_y_true=False, sparse_y_pred=False)
     }
 
     current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -96,13 +96,14 @@ def main():
             unit_name='step'
         )
 
+        # TODO: mIoU requires 
         for (x_train, y_train) in train:
             train_step(fcn_32s, optimizer, loss_object, losses, x_train, y_train)
             p_bar.update(
                 step,
                 values=[
                     ('loss', losses['train_loss'].result()),
-                    ('mIoU', losses['train_mIoU'].result())
+                    ('mIoU', losses['train_mIoU'].result()) 
                 ]
             )
             step += 1
@@ -136,7 +137,7 @@ def main():
         #                         losses['test_loss'].result(), 
         #                         losses['test_mIoU'].result()*100))
 
-        if (epoch % 5) == 0:
+        if ((epoch + 1) % 9) == 0:
             fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
 
         # Reset metrics every epoch
