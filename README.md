@@ -65,6 +65,8 @@ Project Organization
 * Configure aws cli: https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html
 * Login to ECR: https://github.com/aws/deep-learning-containers 
     * `aws ecr get-login-password --region eu-central-2 --profile [PROFILE_NAME] | docker login --username AWS --password-stdin 380420809688.dkr.ecr.eu-central-2.amazonaws.com`
-* `docker pull 380420809688.dkr.ecr.eu-central-2.amazonaws.com/tensorflow-training:2.13.0-cpu-py310-ubuntu20.04-ec2`
+* Download docker image:
+    * cpu: `docker pull 380420809688.dkr.ecr.eu-central-2.amazonaws.com/tensorflow-training:2.13.0-cpu-py310-ubuntu20.04-ec2`
+    * gpu: `docker pull 380420809688.dkr.ecr.eu-central-2.amazonaws.com/tensorflow-training:2.13.0-gpu-py310-cu118-ubuntu20.04-ec2`
 * Install screen inside the running container `apt install screen`
 
