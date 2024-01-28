@@ -97,7 +97,7 @@ def main():
             unit_name='step'
         )
 
-        # TODO: mIoU requires 
+        # TODO: rework tensorboard logging to log per step and not per epoch
         for (x_train, y_train) in train:
             train_step(fcn_32s, optimizer, loss_object, losses, x_train, y_train)
             p_bar.update(
