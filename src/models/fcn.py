@@ -26,7 +26,7 @@ def get_fcn_32s():
     ## FC-4096
     block_6_conv2 = tf.keras.layers.Conv2D(
         filters=4096,
-        kernel_size=(7,7),
+        kernel_size=(1,1),
         strides=(1,1),
         padding='same',
         activation='relu',
