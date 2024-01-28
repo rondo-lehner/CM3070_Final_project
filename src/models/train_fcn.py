@@ -22,7 +22,7 @@ IMAGE_SIZE = 224
 ## Training
 EPOCHS = 100
 LEARNING_RATE = 1e-4
-LOAD_WEIGHTS = False
+LOAD_WEIGHTS = True
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 562 // BATCH_SIZE
@@ -77,7 +77,8 @@ def main():
         'test_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU', sparse_y_true=False, sparse_y_pred=False)
     }
 
-    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    # current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    current_time = "20240128-203409"
     train_log_dir = os.path.join(LOG_DIR, current_time, 'train')
     test_log_dir = os.path.join(LOG_DIR, current_time, 'test')
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
@@ -85,9 +86,11 @@ def main():
 
 
     fcn_32s = fcn.get_fcn_32s()
-    step_global = 0
+    step_global = 1217
     if LOAD_WEIGHTS:
         latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
+        print(latest)
+        return
         fcn_32s.load_weights(latest)
     # fcn_32s.compile(optimizer=optimizer, loss=loss_object)
 
@@ -144,8 +147,8 @@ def main():
         #                         losses['train_mIoU'].result()*100,
         #                         losses['test_loss'].result(), 
         #                         losses['test_mIoU'].result()*100))
-
-        fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
+        if epoch % 2 == 0:
+            fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
 
         # Reset metrics every epoch
         losses['train_loss'].reset_states()
