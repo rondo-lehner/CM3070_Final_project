@@ -20,8 +20,9 @@ BATCH_SIZE = 20
 IMAGE_SIZE = 224
 
 ## Training
-EPOCHS = 10
+EPOCHS = 100
 LEARNING_RATE = 1e-4
+LOAD_WEIGHTS = False
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 562 // BATCH_SIZE
@@ -82,7 +83,12 @@ def main():
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
+
     fcn_32s = fcn.get_fcn_32s()
+    step_global = 0
+    if LOAD_WEIGHTS:
+        latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
+        fcn_32s.load_weights(latest)
     # fcn_32s.compile(optimizer=optimizer, loss=loss_object)
 
     for epoch in range(EPOCHS):
@@ -107,10 +113,11 @@ def main():
                     ('mIoU', losses['train_mIoU'].result()) 
                 ]
             )
+            with train_summary_writer.as_default():
+                tf.summary.scalar('loss', losses['train_loss'].result(), step=step_global)
+                tf.summary.scalar('mIoU', losses['train_mIoU'].result(), step=step_global)
             step += 1
-        with train_summary_writer.as_default():
-            tf.summary.scalar('loss', losses['train_loss'].result(), step=epoch)
-            tf.summary.scalar('mIoU', losses['train_mIoU'].result(), step=epoch)
+            step_global += 1
             
 
         for (x_test, y_test) in validation:
