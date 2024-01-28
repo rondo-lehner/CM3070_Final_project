@@ -89,8 +89,6 @@ def main():
     step_global = 1217
     if LOAD_WEIGHTS:
         latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
-        print(latest)
-        return
         fcn_32s.load_weights(latest)
     # fcn_32s.compile(optimizer=optimizer, loss=loss_object)
 
