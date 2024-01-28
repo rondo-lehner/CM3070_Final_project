@@ -69,7 +69,7 @@ def getFCNPipeline(
     train_batches = (
         ds_train
         .cache()
-        .shuffle(buffer_size=512)
+        .shuffle(buffer_size=803) # in theory the full dataset
         .batch(batch_size)
         .map(lambda x: load_images(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
