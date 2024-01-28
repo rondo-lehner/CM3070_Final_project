@@ -13,9 +13,9 @@ from dotenv import find_dotenv, load_dotenv
 from src.models import fcn
 
 ## Pipeline
-SPLIT_TRAIN = ":100"
-SPLIT_VALID = "10:20"
-SPLIT_TEST = "20:30"
+SPLIT_TRAIN = ":70%"
+SPLIT_VALID = "70%:85%"
+SPLIT_TEST = "85%:"
 BATCH_SIZE = 20
 IMAGE_SIZE = 224
 
