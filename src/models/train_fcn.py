@@ -138,8 +138,7 @@ def main():
         #                         losses['test_loss'].result(), 
         #                         losses['test_mIoU'].result()*100))
 
-        if ((epoch + 1) % 9) == 0:
-            fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
+        fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
 
         # Reset metrics every epoch
         losses['train_loss'].reset_states()

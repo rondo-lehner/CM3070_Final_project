@@ -68,12 +68,14 @@ def getFCNPipeline(
     )
     train_batches = (
         ds_train
+        .cache()
         .batch(batch_size)
         .map(lambda x: load_images(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )
     validation_batches = (
         ds_valid
+        .cache()
         .batch(batch_size)
         .map(lambda x: load_images(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
