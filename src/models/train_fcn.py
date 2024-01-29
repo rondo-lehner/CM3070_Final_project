@@ -16,17 +16,17 @@ from src.models import fcn
 SPLIT_TRAIN = ":70%"
 SPLIT_VALID = "70%:85%"
 SPLIT_TEST = "85%:"
-BATCH_SIZE = 20
+BATCH_SIZE = 32
 IMAGE_SIZE = 224
 
 ## Training
 EPOCHS = 100
-LEARNING_RATE = 1e-3
+LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 1e-4
 LOAD_WEIGHTS = False
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
-STEPS_PER_EPOCH = 562 // BATCH_SIZE
+STEPS_PER_EPOCH = 563 // BATCH_SIZE
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'fcn_32s')
 CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{batch}.ckpt')
 
