@@ -11,6 +11,8 @@ def get_fcn_32s():
         input_shape=(224, 224, 3), 
     )
 
+    base_model.trainable = False
+
     # Layers that need to be "fully convolutionalized" (layer sizes as per https://doi.org/10.48550/arXiv.1409.1556, last accessed: 22 Jan 2024)
     # Conversion as per: https://cs231n.github.io/convolutional-networks/#convert, last accessed: 22 Jan 2024   
     
@@ -63,7 +65,7 @@ def get_fcn_32s():
         interpolation='bilinear'
     )
 
-    base_model.trainable = False
+    # base_model.trainable = False
 
     x = base_model.output
     x = block_6_conv1(x)
