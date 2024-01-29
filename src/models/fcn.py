@@ -37,32 +37,39 @@ def get_fcn_32s():
 
     ## We append a 1 × 1 convolution with channel dimension 21 to predict scores for each of the PASCAL classes at each of the coarse output locations
     # Looking at the original implementation there is no explicit activation function: https://github.com/shelhamer/fcn.berkeleyvision.org/blob/master/voc-fcn32s/net.py, last accessed 22.01.2024
-    # Hence "linear" is chosen
+    # I first opted for "linear" activation but then adapted the same activation as https://keras.io/examples/vision/fully_convolutional_network/ (last accessed 29.01.2024)
     # TODO: make 0-initialized as per Experimental framework of original paper
     block_6_conv3 = tf.keras.layers.Conv2D(
         filters=7,
         kernel_size=(1,1),
         strides=(1,1),
         padding='same',
-        activation='linear',
+        activation='relu',
         name='block_6_conv3_score'
     )
-    ## followed by a deconvolution layer to bi-linearly upsample the coarse outputs to pixel-dense outputs
-    block_6_deconv1 = tf.keras.layers.Conv2DTranspose(
+    block_6_softmax4 = tf.keras.layers.Conv2D(
         filters=7,
-        kernel_size=(64, 64),
-        strides=(32, 32),
-        use_bias=False, # As per original implementation
-        padding='same',
+        kernel_size=(1, 1),
         activation='softmax',
-        name='block_6_deconv1'
+        padding='same',
+        strides=(1,1),
+        name='block_6_softmax'
     )
-    block_6_deconv1.trainable = False # As per original implementation: param=[dict(lr_mult=0)]
+    ## followed by a deconvolution layer to bi-linearly upsample the coarse outputs to pixel-dense outputs
+    #  as per https://keras.io/examples/vision/fully_convolutional_network/ (last accessed 29.01.2024)
+    block_6_deconv5 = tf.keras.layers.UpSampling2D(
+        size=(32, 32),
+        data_format='channels_last',
+        interpolation='bilinear'
+    )
+
+    base_model.trainable = False
 
     x = base_model.output
     x = block_6_conv1(x)
     x = block_6_conv2(x)
     x = block_6_conv3(x) #scoring layer
-    output_layer = block_6_deconv1(x)
+    x = block_6_softmax4(x)
+    output_layer = block_6_deconv5(x)
 
     return tf.keras.Model(inputs=base_model.input, outputs=output_layer)

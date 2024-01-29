@@ -21,8 +21,9 @@ IMAGE_SIZE = 224
 
 ## Training
 EPOCHS = 100
-LEARNING_RATE = 1e-4
-LOAD_WEIGHTS = True
+LEARNING_RATE = 1e-3
+WEIGHT_DECAY = 1e-4
+LOAD_WEIGHTS = False
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 562 // BATCH_SIZE
@@ -59,7 +60,7 @@ def main():
             write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
         )
 
-    optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+    optimizer = tf.keras.optimizers.AdamW(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     loss_object = tf.keras.losses.CategoricalCrossentropy()
     # metrics = [loss_object,
     #         tf.keras.metrics.MeanIoU(num_classes=7)]
@@ -77,8 +78,7 @@ def main():
         'test_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU', sparse_y_true=False, sparse_y_pred=False)
     }
 
-    # current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    current_time = "20240128-203409"
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     train_log_dir = os.path.join(LOG_DIR, current_time, 'train')
     test_log_dir = os.path.join(LOG_DIR, current_time, 'test')
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
@@ -86,7 +86,7 @@ def main():
 
 
     fcn_32s = fcn.get_fcn_32s()
-    step_global = 1217
+    step_global = 0
     if LOAD_WEIGHTS:
         latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
         fcn_32s.load_weights(latest)
