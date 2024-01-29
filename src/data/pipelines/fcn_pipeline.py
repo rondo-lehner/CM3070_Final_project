@@ -7,7 +7,7 @@ import os
 
 
 ## Helper functions
-# TODO: consider decorating with @tf.function
+@tf.function
 def rgb_to_index(image):
         palette = [
             [0, 255, 255],   # urban_land
@@ -31,7 +31,7 @@ def rgb_to_index(image):
 
         return indexed
 
-# TODO: consider decorating with @tf.function
+@tf.function
 def load_images(datapoint, image_size):
 
     images = tf.image.resize(datapoint['image'], (image_size, image_size))
