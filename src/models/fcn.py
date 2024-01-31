@@ -49,7 +49,7 @@ def get_fcn_32s():
         activation='relu',
         name='block_6_conv3_score'
     )
-    block_6_softmax4 = tf.keras.layers.Conv2D(
+    block_6_softmax = tf.keras.layers.Conv2D(
         filters=7,
         kernel_size=(1, 1),
         activation='softmax',
@@ -59,7 +59,7 @@ def get_fcn_32s():
     )
     ## followed by a deconvolution layer to bi-linearly upsample the coarse outputs to pixel-dense outputs
     #  as per https://keras.io/examples/vision/fully_convolutional_network/ (last accessed 29.01.2024)
-    block_6_deconv5 = tf.keras.layers.UpSampling2D(
+    block_6_upsampling = tf.keras.layers.UpSampling2D(
         size=(32, 32),
         data_format='channels_last',
         interpolation='bilinear'
@@ -71,7 +71,46 @@ def get_fcn_32s():
     x = block_6_conv1(x)
     x = block_6_conv2(x)
     x = block_6_conv3(x) #scoring layer
-    x = block_6_softmax4(x)
-    output_layer = block_6_deconv5(x)
+    x = block_6_softmax(x)
+    output_layer = block_6_upsampling(x)
 
     return tf.keras.Model(inputs=base_model.input, outputs=output_layer)
+
+def get_fcn_16s(checkpoint_file_path):
+    fcn_32s = get_fcn_32s()
+    fcn_32s.load_weights(checkpoint_file_path)
+
+    block_7_pool4_prediction = tf.keras.layers.Conv2D(
+        filters=7,
+        kernel_size=(1, 1),
+        padding='same',
+        strides=(1, 1),
+        activation='linear',
+        kernel_initializer=tf.keras.initializer.Zeros()
+    )(fcn_32s.get_layer(name="block4_pool").output)
+
+    block_7_pool5_upsampling = tf.keras.layers.UpSampling2D(
+        size=(2, 2),
+        data_format='channels_last',
+        interpolation='bilinear'
+    )(fcn_32s.get_layer(name="block_6_conv3").output)
+
+    block_7_softmax = tf.keras.Conv2D(
+        filters=7,
+        kernel_size=(1, 1),
+        activation='softmax',
+        padding='same',
+        strides=(1, 1)
+    )
+
+    block_7_upsampling = tf.keras.layers.UpSampling2D(
+        size=(16,  16),
+        data_format='channels_last',
+        interpolation='bilinear'
+    )
+
+    block_7_combined = tf.keras.layers.Add()([block_7_pool4_prediction, block_7_pool5_upsampling])
+    x = block_7_softmax(block_7_combined.output)
+    output_layer = block_7_upsampling(x)
+
+    return tf.keras.Model(inputs=fcn_32s.input, outputs=output_layer)
