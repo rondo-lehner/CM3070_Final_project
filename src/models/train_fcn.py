@@ -61,6 +61,8 @@ def main():
             write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
         )
 
+
+    # TODO: Consider implementation of class weighted loss, a la: https://stackoverflow.com/a/69220169/6728108
     optimizer = tf.keras.optimizers.AdamW(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     loss_object = tf.keras.losses.CategoricalCrossentropy()
    
@@ -145,7 +147,7 @@ def main():
         #                         losses['test_loss'].result(), 
         #                         losses['test_mIoU'].result()*100))
         if epoch % 2 == 0:
-            model.save_weights(os.path.join(CHECKPOINT_DIR, f'{step_global}_val_loss:_{losses["test_loss"].result()}'))
+            model.save_weights(os.path.join(CHECKPOINT_DIR, f'{step_global}_val_loss:_{losses["test_loss"].result()}.h5'))
 
         # Reset metrics every epoch
         losses['train_loss'].reset_states()

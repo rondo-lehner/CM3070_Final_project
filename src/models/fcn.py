@@ -62,7 +62,8 @@ def get_fcn_32s():
     block_6_upsampling = tf.keras.layers.UpSampling2D(
         size=(32, 32),
         data_format='channels_last',
-        interpolation='bilinear'
+        interpolation='bilinear',
+        name="block_6_upsampling"
     )
 
     # base_model.trainable = False
@@ -86,13 +87,15 @@ def get_fcn_16s(checkpoint_file_path):
         padding='same',
         strides=(1, 1),
         activation='linear',
-        kernel_initializer=tf.keras.initializers.Zeros()
+        kernel_initializer=tf.keras.initializers.Zeros(),
+        name="block_7_pool4_prediction"
     )(fcn_32s.get_layer(name="block4_pool").output)
 
     block_7_pool5_upsampling = tf.keras.layers.UpSampling2D(
         size=(2, 2),
         data_format='channels_last',
-        interpolation='bilinear'
+        interpolation='bilinear',
+        name="block_7_pool5_upsampling"
     )(fcn_32s.get_layer(name="block_6_conv3_score").output)
 
     block_7_softmax = tf.keras.layers.Conv2D(
@@ -100,14 +103,18 @@ def get_fcn_16s(checkpoint_file_path):
         kernel_size=(1, 1),
         activation='softmax',
         padding='same',
-        strides=(1, 1)
+        strides=(1, 1),
+        name="block_7_softmax"
     )
 
     block_7_upsampling = tf.keras.layers.UpSampling2D(
         size=(16,  16),
         data_format='channels_last',
-        interpolation='bilinear'
+        interpolation='bilinear',
+        name="block_7_upsampling"
     )
+
+    # TODO: find way to remove upsampling layer from fcn_32s
 
     block_7_combined_output = tf.keras.layers.Add()([block_7_pool4_prediction, block_7_pool5_upsampling])
     x = block_7_softmax(block_7_combined_output)
