@@ -86,16 +86,16 @@ def get_fcn_16s(checkpoint_file_path):
         padding='same',
         strides=(1, 1),
         activation='linear',
-        kernel_initializer=tf.keras.initializer.Zeros()
+        kernel_initializer=tf.keras.initializers.Zeros()
     )(fcn_32s.get_layer(name="block4_pool").output)
 
     block_7_pool5_upsampling = tf.keras.layers.UpSampling2D(
         size=(2, 2),
         data_format='channels_last',
         interpolation='bilinear'
-    )(fcn_32s.get_layer(name="block_6_conv3").output)
+    )(fcn_32s.get_layer(name="block_6_conv3_score").output)
 
-    block_7_softmax = tf.keras.Conv2D(
+    block_7_softmax = tf.keras.layers.Conv2D(
         filters=7,
         kernel_size=(1, 1),
         activation='softmax',
@@ -109,8 +109,8 @@ def get_fcn_16s(checkpoint_file_path):
         interpolation='bilinear'
     )
 
-    block_7_combined = tf.keras.layers.Add()([block_7_pool4_prediction, block_7_pool5_upsampling])
-    x = block_7_softmax(block_7_combined.output)
+    block_7_combined_output = tf.keras.layers.Add()([block_7_pool4_prediction, block_7_pool5_upsampling])
+    x = block_7_softmax(block_7_combined_output)
     output_layer = block_7_upsampling(x)
 
     return tf.keras.Model(inputs=fcn_32s.input, outputs=output_layer)
