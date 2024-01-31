@@ -24,14 +24,15 @@ EPOCHS = 100
 LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 1e-4
 LOAD_WEIGHTS = False
+MODEL = 'fcn_16s'               # fcn_32s, fcn_16s, fcn_8s
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 563 // BATCH_SIZE
-CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'fcn_32s')
+CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', MODEL)
 CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{batch}.ckpt')
 
 ## Tensorboard
-LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'fcn_32s')
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', MODEL)
 UPDATE_FREQ = 1
 
 def main():
@@ -62,15 +63,7 @@ def main():
 
     optimizer = tf.keras.optimizers.AdamW(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     loss_object = tf.keras.losses.CategoricalCrossentropy()
-    # metrics = [loss_object,
-    #         tf.keras.metrics.MeanIoU(num_classes=7)]
-    # Define our metrics
-
-    ##### Tensorboard (based on https://www.tensorflow.org/tensorboard/get_started)
-    # train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
-    # train_mIoU = tf.keras.metrics.MeanIoU(num_classes=7, name='train_mIoU')
-    # test_loss = tf.keras.metrics.Mean('test_loss', dtype=tf.float32)
-    # test_mIoU = tf.keras.metrics.MeanIoU(num_classes=7, name='test_mIoU')
+   
     losses = {
         'train_loss': tf.keras.metrics.Mean('train_loss', dtype=tf.float32),
         'train_mIoU': tf.keras.metrics.MeanIoU(num_classes=7, name='train_mIoU', sparse_y_true=False, sparse_y_pred=False),
@@ -84,12 +77,18 @@ def main():
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
+    match MODEL:
+        case 'fcn_32s':
+            model = fcn.get_fcn_32s()
+        case 'fcn_16s':
+            fcn_32s_checkpoint_path = os.path.join(CHECKPOINT_DIR,'..', 'fcn_32s', 'val_loss: 1.371886968612671')
+            model = fcn.get_fcn_16s(fcn_32s_checkpoint_path)
 
-    fcn_32s = fcn.get_fcn_32s()
+    model = fcn.get_fcn_32s()
     step_global = 0
     if LOAD_WEIGHTS:
         latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
-        fcn_32s.load_weights(latest)
+        model.load_weights(latest)
     # fcn_32s.compile(optimizer=optimizer, loss=loss_object)
 
     for epoch in range(EPOCHS):
@@ -106,7 +105,7 @@ def main():
 
         # TODO: rework tensorboard logging to log per step and not per epoch
         for (x_train, y_train) in train:
-            train_step(fcn_32s, optimizer, loss_object, losses, x_train, y_train)
+            train_step(model, optimizer, loss_object, losses, x_train, y_train)
             p_bar.update(
                 step,
                 values=[
@@ -122,7 +121,7 @@ def main():
             
 
         for (x_test, y_test) in validation:
-            test_step(fcn_32s, loss_object, losses, x_test, y_test)
+            test_step(model, loss_object, losses, x_test, y_test)
         with test_summary_writer.as_default():
             tf.summary.scalar('loss', losses['test_loss'].result(), step=epoch)
             tf.summary.scalar('mIoU', losses['test_mIoU'].result(), step=epoch)
@@ -146,20 +145,13 @@ def main():
         #                         losses['test_loss'].result(), 
         #                         losses['test_mIoU'].result()*100))
         if epoch % 2 == 0:
-            fcn_32s.save_weights(os.path.join(CHECKPOINT_DIR, f'val_loss: {losses["test_loss"].result()}'))
+            model.save_weights(os.path.join(CHECKPOINT_DIR, f'{step_global}_val_loss:_{losses["test_loss"].result()}'))
 
         # Reset metrics every epoch
         losses['train_loss'].reset_states()
         losses['train_mIoU'].reset_states()
         losses['test_loss'].reset_states()
         losses['test_mIoU'].reset_states()
-
-
-    # history = fcn_32s.fit(train, epochs=EPOCHS,
-    #                         steps_per_epoch=STEPS_PER_EPOCH,
-    #                         # validation_steps=VALIDATION_STEPS,
-    #                         # validation_data=val,
-    #                         callbacks=[tensorboard_callback])
 
     logger.info('Training completed.')
 
