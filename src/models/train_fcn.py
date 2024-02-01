@@ -24,7 +24,7 @@ EPOCHS = 100
 LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 1e-4
 LOAD_WEIGHTS = False
-MODEL = 'fcn_16s'               # fcn_32s, fcn_16s, fcn_8s
+MODEL = 'fcn_8s'               # fcn_32s, fcn_16s, fcn_8s
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 563 // BATCH_SIZE
@@ -61,7 +61,6 @@ def main():
             write_images=False # True doesn't add real benefit, it appears there is a limitation with the visualisation of Conv2D weights: https://github.com/tensorflow/tensorboard/issues/2240
         )
 
-
     # TODO: Consider implementation of class weighted loss, a la: https://stackoverflow.com/a/69220169/6728108
     optimizer = tf.keras.optimizers.AdamW(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     loss_object = tf.keras.losses.CategoricalCrossentropy()
@@ -85,6 +84,9 @@ def main():
         case 'fcn_16s':
             fcn_32s_checkpoint_path = os.path.join(CHECKPOINT_DIR,'..', 'fcn_32s', 'val_loss: 1.371886968612671')
             model = fcn.get_fcn_16s(fcn_32s_checkpoint_path)
+        case 'fcn_8s':
+            fcn_16s_checkpoint_path = os.path.join(CHECKPOINT_DIR,'..', 'fcn_16s', '342_val_loss:_0.9029872417449951.h5')
+            model = fcn.get_fcn_8s(fcn_16s_checkpoint_path)
 
     step_global = 0
     if LOAD_WEIGHTS:
