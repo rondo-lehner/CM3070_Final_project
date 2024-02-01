@@ -86,7 +86,6 @@ def main():
             fcn_32s_checkpoint_path = os.path.join(CHECKPOINT_DIR,'..', 'fcn_32s', 'val_loss: 1.371886968612671')
             model = fcn.get_fcn_16s(fcn_32s_checkpoint_path)
 
-    model = fcn.get_fcn_32s()
     step_global = 0
     if LOAD_WEIGHTS:
         latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
