@@ -85,7 +85,7 @@ def main():
             fcn_32s_checkpoint_path = os.path.join(CHECKPOINT_DIR,'..', 'fcn_32s', 'val_loss: 1.371886968612671')
             model = fcn.get_fcn_16s(fcn_32s_checkpoint_path)
         case 'fcn_8s':
-            fcn_16s_checkpoint_path = os.path.join(CHECKPOINT_DIR,'..', 'fcn_16s', '342_val_loss:_0.9029872417449951.h5')
+            fcn_16s_checkpoint_path = "/workspaces/CM3070_Final_project/models/ckpt/fcn_16s/342_val_loss:_0.9029872417449951.h5"
             model = fcn.get_fcn_8s(fcn_16s_checkpoint_path)
 
     step_global = 0
