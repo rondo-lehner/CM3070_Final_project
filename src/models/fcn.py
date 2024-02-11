@@ -125,7 +125,8 @@ def get_fcn_16s(checkpoint_file_path=None):
 
 def get_fcn_8s(checkpoint_file_path):
     fcn_16s = get_fcn_16s()
-    fcn_16s.load_weights(checkpoint_file_path)
+    if checkpoint_file_path:
+        fcn_16s.load_weights(checkpoint_file_path)
 
     block_8_pool3_prediction = tf.keras.layers.Conv2D(
         filters= 7,
