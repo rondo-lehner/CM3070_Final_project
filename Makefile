@@ -70,6 +70,10 @@ test_dataset: requirements
 train_model_1: requirements
 	$(PYTHON_INTERPRETER) src/models/train_early_convnet.py
 
+## Run train script for the early convnet model
+train_model_2: requirements
+	$(PYTHON_INTERPRETER) src/models/train_fcn.py
+
 ## Upload Data to S3
 sync_data_to_s3:
 ifeq (default,$(PROFILE))
