@@ -48,6 +48,15 @@ def load_images(datapoint, image_size):
         )
     annotations = tf.squeeze(annotations, axis=4)
 
+    # TODO: implement MirrorPad op for images: https://www.tensorflow.org/api_docs/python/tf/raw_ops/MirrorPad
+    # Notes:
+    # Pixels lost because of unpadded convolutions: 4px (at Input)
+    # Pixels lost because of cropping: 176px
+    # Pixels lost because of unpadded convolutions: 4px (at Output)
+    # Desired output: 224px
+    # Required input: 224 + 4 + 176 + 4 = 408
+    # --> Consider https://gist.github.com/fepegar/1fb865494cb44ac043c3189ec415d411 to determine input and output size
+
     return images, annotations
 
 ## Main function
