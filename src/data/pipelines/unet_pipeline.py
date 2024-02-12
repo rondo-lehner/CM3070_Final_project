@@ -32,7 +32,7 @@ def rgb_to_index(image):
         return indexed
 
 @tf.function
-def load_images(datapoint, image_size):
+def load_images(datapoint, image_size, border):
 
     images = tf.image.resize(datapoint['image'], (image_size, image_size))
 
@@ -48,14 +48,14 @@ def load_images(datapoint, image_size):
         )
     annotations = tf.squeeze(annotations, axis=4)
 
-    # TODO: implement MirrorPad op for images: https://www.tensorflow.org/api_docs/python/tf/raw_ops/MirrorPad
-    # Notes:
-    # Pixels lost because of unpadded convolutions: 4px (at Input)
-    # Pixels lost because of cropping: 176px
-    # Pixels lost because of unpadded convolutions: 4px (at Output)
-    # Desired output: 224px
-    # Required input: 224 + 4 + 176 + 4 = 408
-    # --> Consider https://gist.github.com/fepegar/1fb865494cb44ac043c3189ec415d411 to determine input and output size
+    paddings = tf.constant([[0, 0], [border, border], [border, border], [0, 0]], dtype=tf.int32)
+
+    # normalize -1 to 1
+    images = (tf.cast(images, tf.float32) / 127.5) - 1.0
+
+    images = tf.raw_ops.MirrorPad(
+        input=images, paddings=paddings, mode='REFLECT', name=None
+    )
 
     return images, annotations
 
@@ -65,7 +65,8 @@ def getUNetPipeline(
     slice_valid="70%:90%",
     slice_test="90%:",
     batch_size=1,
-    image_size=224
+    image_size=224,
+    border=92
     ):
 
     (ds_train, ds_valid, ds_test), ds_info = tfds.load(
@@ -79,20 +80,20 @@ def getUNetPipeline(
         .cache()
         .shuffle(buffer_size=803) # in theory the full dataset
         .batch(batch_size)
-        .map(lambda x: load_images(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(lambda x: load_images(x, image_size, border), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )
     validation_batches = (
         ds_valid
         .cache()
         .batch(batch_size)
-        .map(lambda x: load_images(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(lambda x: load_images(x, image_size, border), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )
     test_batches = (
         ds_test
         .batch(batch_size)
-        .map(lambda x: load_images(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(lambda x: load_images(x, image_size, border), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )    
     return (train_batches, validation_batches, test_batches)
