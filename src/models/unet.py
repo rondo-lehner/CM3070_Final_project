@@ -124,15 +124,46 @@ def getUNet(n_downsampling=4, input_shape=(572, 572, 3)):
             (3 if i == 0 else filter_sizes[i-1])        # 3 channels for first block
         )(inputs if i == 0 else blocks[i-1]))           # connect layers
 
-    # TODO: debug why expansive path does not reduce border pixels after convolutions
+    ## Midpoint
+    N = 9 * filter_sizes[-1]
+    x = tf.keras.layers.Conv2D(
+            filters=filter_sizes[-1],
+            kernel_size=(3, 3),
+            strides=(1, 1),
+            padding='valid',
+            data_format='channels_last',
+            dilation_rate=(1, 1),
+            activation='relu',
+            kernel_initializer=tf.keras.initializers.RandomNormal(mean=0., stddev=tf.math.sqrt(2/N),
+            )
+        )(blocks[-1])
+
+    x = tf.keras.layers.Conv2D(
+            filters=filter_sizes[-1],
+            kernel_size=(3, 3),
+            strides=(1, 1),
+            padding='valid',
+            data_format='channels_last',
+            dilation_rate=(1, 1),
+            activation='relu',
+            kernel_initializer=tf.keras.initializers.RandomNormal(mean=0., stddev=tf.math.sqrt(2/N)
+            )
+        )(x)
+
     for i, filter_size in enumerate(reversed(filter_sizes)):
         blocks.append(ExpansiveBlock(filter_size)(
-            blocks[-1], # input from previous layer
+            x if i == 0 else blocks[-1] , # input from previous layer
             blocks[len(filter_sizes) - 2 - i]                         # skip connection
         ))
 
+    scored_layer = tf.keras.layers.Conv2D(
+        filters=7,
+        kernel_size=(1, 1),
+        strides=(1, 1),
+        activation='softmax'
+    )(blocks[-1])
 
-    return tf.keras.Model(inputs=inputs, outputs=blocks[-1])
+    return tf.keras.Model(inputs=inputs, outputs=scored_layer)
 
     
 
