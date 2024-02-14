@@ -44,9 +44,9 @@ class ContractingBlock(tf.keras.Model):
 
     def call(self, inputs):
         x = self.c1(inputs)
-        x = self.c2(x)
-        output = self.p(x)
-        return output
+        convolved = self.c2(x)
+        pooled = self.p(convolved)
+        return pooled, convolved
 
 class ExpansiveBlock(tf.keras.Model):
     """
@@ -109,10 +109,9 @@ class ExpansiveBlock(tf.keras.Model):
         return output
 
 
-def getUNet(n_downsampling=4, input_shape=(572, 572, 3)):
+def get_UNet(n_downsampling=4, input_shape=(420, 420, 3)):
 
     inputs = tf.keras.Input(shape=input_shape)
-
     
     filter_sizes = [64 * ((i+1) ** 2) for i in range(n_downsampling)]
 
@@ -122,7 +121,7 @@ def getUNet(n_downsampling=4, input_shape=(572, 572, 3)):
         blocks.append(ContractingBlock(
             filter_size,
             (3 if i == 0 else filter_sizes[i-1])        # 3 channels for first block
-        )(inputs if i == 0 else blocks[i-1]))           # connect layers
+        )(inputs if i == 0 else blocks[i-1][0]))           # connect layers
 
     ## Midpoint
     N = 9 * filter_sizes[-1]
@@ -136,7 +135,7 @@ def getUNet(n_downsampling=4, input_shape=(572, 572, 3)):
             activation='relu',
             kernel_initializer=tf.keras.initializers.RandomNormal(mean=0., stddev=tf.math.sqrt(2/N),
             )
-        )(blocks[-1])
+        )(blocks[-1][0])
 
     x = tf.keras.layers.Conv2D(
             filters=filter_sizes[-1],
@@ -152,8 +151,8 @@ def getUNet(n_downsampling=4, input_shape=(572, 572, 3)):
 
     for i, filter_size in enumerate(reversed(filter_sizes)):
         blocks.append(ExpansiveBlock(filter_size)(
-            x if i == 0 else blocks[-1] , # input from previous layer
-            blocks[len(filter_sizes) - 2 - i]                         # skip connection
+            x if i == 0 else blocks[-1],                                # input from previous layer
+            blocks[len(filter_sizes) - 1 - i][1]                            # skip connection
         ))
 
     scored_layer = tf.keras.layers.Conv2D(
