@@ -13,44 +13,46 @@ from dotenv import find_dotenv, load_dotenv
 from src.models import unet
 
 ## Pipeline
-SPLIT_TRAIN = ":70%"
-SPLIT_VALID = "70%:85%"
-SPLIT_TEST = "85%:"
-BATCH_SIZE = 32
-IMAGE_SIZE = 224
+SPLIT_TRAIN = ":10"
+SPLIT_VALID = "10:15"
+SPLIT_TEST = "0:15"
+BATCH_SIZE = 1
+IMAGE_SIZE = 228    # value model-compatible value to 224
+BORDER = 92
 
 ## Training
-EPOCHS = 100
-LEARNING_RATE = 1e-4
-WEIGHT_DECAY = 1e-4
+EPOCHS = 5
+LEARNING_RATE = 1e-3
+MOMENTUM = 0.99
 LOAD_WEIGHTS = False
-MODEL = 'fcn_8s'               # fcn_32s, fcn_16s, fcn_8s
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
-STEPS_PER_EPOCH = 563 // BATCH_SIZE
-CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', MODEL)
-CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{batch}.ckpt')
+STEPS_PER_EPOCH = 10 // BATCH_SIZE
+VALIDATION_STEPS = 5 // BATCH_SIZE
+CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'unet')
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{val_loss:.2f}.ckpt')
 
 ## Tensorboard
-LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', MODEL)
-UPDATE_FREQ = 1
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'unet')
+UPDATE_FREQ = 'batch'
 
 def main():
     logger = logging.getLogger(__name__)
     logger.info('Starting training...')
 
-    (train, validation, test) = fcn_pipeline.getFCNPipeline(
+    (train, validation, test) = unet_pipeline.getUNetPipeline(
         SPLIT_TRAIN,
         SPLIT_VALID,
         SPLIT_TEST,
         BATCH_SIZE,
-        IMAGE_SIZE
+        IMAGE_SIZE,
+        BORDER
     )
 
     model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=CHECKPOINT_FILEPATH,
         save_weights_only=True,
-        monitor='val_cce',
+        monitor='val_loss',
         save_freq='epoch'
     )
 
@@ -62,14 +64,41 @@ def main():
         )
 
     # TODO: Implement optimizer and loss as per paper
-    optimizer = tf.keras.optimizers.AdamW(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
-    loss_object = tf.keras.losses.CategoricalCrossentropy()
+    optimizer = tf.keras.optimizers.experimental.SGD(learning_rate=LEARNING_RATE, momentum=MOMENTUM)
+    loss = tf.keras.losses.CategoricalCrossentropy()
+
+    model = unet.get_UNet(input_shape=(412, 412, 3))
+    model.compile(
+        optimizer=optimizer, 
+        loss=loss,
+        metrics = [tf.keras.metrics.MeanIoU(num_classes=7, name='mIoU', sparse_y_true=False, sparse_y_pred=False)])
 
     if LOAD_WEIGHTS:
         latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
         model.load_weights(latest)
-    # fcn_32s.compile(optimizer=optimizer, loss=loss_object)
+
+    model.fit(
+        train,
+        epochs=EPOCHS, 
+        validation_data=validation, 
+        callbacks=[tensorboard_callback, model_checkpoint_callback],
+        steps_per_epoch=STEPS_PER_EPOCH,
+        validation_steps=VALIDATION_STEPS
+        )
 
     # TODO: implement model.fit()
 
     logger.info('Training completed.')
+
+if __name__ == '__main__':
+    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
+    # not used in this stub but often useful for finding various files
+    project_dir = Path(__file__).resolve().parents[2]
+
+    # find .env automagically by walking up directories until it's found, then
+    # load up the .env entries as environment variables
+    load_dotenv(find_dotenv())
+
+    main()
