@@ -70,9 +70,13 @@ test_dataset: requirements
 train_model_1: requirements
 	$(PYTHON_INTERPRETER) src/models/train_early_convnet.py
 
-## Run train script for the early convnet model
+## Run train script for the current fcn model
 train_model_2: requirements
 	$(PYTHON_INTERPRETER) src/models/train_fcn.py
+
+## Run train script for the unet model
+train_model_3: requirements
+	$(PYTHON_INTERPRETER) src/models/train_unet.py
 
 ## Upload Data to S3
 sync_data_to_s3:
