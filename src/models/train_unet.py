@@ -13,27 +13,35 @@ from dotenv import find_dotenv, load_dotenv
 from src.models import unet
 
 ## Pipeline
-SPLIT_TRAIN = ":10"
-SPLIT_VALID = "10:15"
-SPLIT_TEST = "0:15"
+SPLIT_TRAIN = ":70%"
+SPLIT_VALID = "70%:85%"
+SPLIT_TEST = "85%:"
 BATCH_SIZE = 1
 IMAGE_SIZE = 228    # value model-compatible value to 224
 BORDER = 92
 
 ## Training
-EPOCHS = 5
+EPOCHS = 100
 LEARNING_RATE = 1e-3
 MOMENTUM = 0.99
-LOAD_WEIGHTS = False
+CLASS_WEIGHTS = {
+        0: 6.070,    # urban_land
+        1: 1.,       # agriculture_land
+        2: 5.559,    # rangeland
+        3: 4.128,    # forest_land
+        4: 15.176,   # water
+        5: 9.244,    # barren_land
+        6: 100.       # unknown - Note: not to scale with respect to the others but not that important for the overall classification
+}
+LOAD_WEIGHTS = True
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
-STEPS_PER_EPOCH = 10 // BATCH_SIZE
-VALIDATION_STEPS = 5 // BATCH_SIZE
+STEPS_PER_EPOCH = 563 // BATCH_SIZE
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'unet')
-CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{val_loss:.2f}.ckpt')
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{val_loss:.2f}-resumed.ckpt')
 
 ## Tensorboard
-LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'unet')
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'unet', 'fit', 'resumed')
 UPDATE_FREQ = 'batch'
 
 def main():
@@ -67,7 +75,8 @@ def main():
     optimizer = tf.keras.optimizers.experimental.SGD(learning_rate=LEARNING_RATE, momentum=MOMENTUM)
     loss = tf.keras.losses.CategoricalCrossentropy()
 
-    model = unet.get_UNet(input_shape=(412, 412, 3))
+    size = IMAGE_SIZE + BORDER * 2
+    model = unet.get_UNet(input_shape=(size, size, 3))
     model.compile(
         optimizer=optimizer, 
         loss=loss,
@@ -82,8 +91,7 @@ def main():
         epochs=EPOCHS, 
         validation_data=validation, 
         callbacks=[tensorboard_callback, model_checkpoint_callback],
-        steps_per_epoch=STEPS_PER_EPOCH,
-        validation_steps=VALIDATION_STEPS
+        class_weights=CLASS_WEIGHTS
         )
 
     # TODO: implement model.fit()
