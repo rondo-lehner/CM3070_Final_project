@@ -65,7 +65,7 @@ def getUNetPipeline(
     slice_valid="70%:90%",
     slice_test="90%:",
     batch_size=1,
-    image_size=224,
+    image_size=228,
     border=92
     ):
 
@@ -78,7 +78,7 @@ def getUNetPipeline(
     train_batches = (
         ds_train
         .cache()
-        .shuffle(buffer_size=803) # in theory the full dataset
+        .shuffle(buffer_size=803, reshuffle_each_iteration=True) # in theory the full dataset
         .batch(batch_size)
         .map(lambda x: load_images(x, image_size, border), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
