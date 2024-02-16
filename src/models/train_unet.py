@@ -21,9 +21,11 @@ IMAGE_SIZE = 228    # value model-compatible value to 224
 BORDER = 92
 
 ## Training
+# Useful source for optimal hyperparameters: https://www.mdpi.com/1999-4907/13/11/1813 (last accessed: 15.02.2024)
 EPOCHS = 100
-LEARNING_RATE = 1e-3
-MOMENTUM = 0.99
+LEARNING_RATE = 0.01
+MOMENTUM = 0.9
+WEIGHT_DECAY = 0.01
 CLASS_WEIGHTS = {
         0: 6.070,    # urban_land
         1: 1.,       # agriculture_land
@@ -34,14 +36,15 @@ CLASS_WEIGHTS = {
         6: 100.       # unknown - Note: not to scale with respect to the others but not that important for the overall classification
 }
 LOAD_WEIGHTS = True
+TRAIN_EPISODE = 2
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 563 // BATCH_SIZE
-CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'unet')
-CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{val_loss:.2f}-resumed.ckpt')
+CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'unet', 'episode', str(TRAIN_EPISODE))
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{val_loss:.2f}-resumed-focalLoss.ckpt')
 
 ## Tensorboard
-LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'unet', 'fit', 'resumed')
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'unet', 'fit', str(TRAIN_EPISODE) + '-resumed-focalLoss')
 UPDATE_FREQ = 'batch'
 
 def main():
@@ -72,26 +75,25 @@ def main():
         )
 
     # TODO: Implement optimizer and loss as per paper
-    optimizer = tf.keras.optimizers.experimental.SGD(learning_rate=LEARNING_RATE, momentum=MOMENTUM)
-    loss = tf.keras.losses.CategoricalCrossentropy()
+    optimizer = tf.keras.optimizers.experimental.SGD(learning_rate=LEARNING_RATE, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
+    loss = tf.keras.losses.CategoricalFocalCrossentropy()
 
     size = IMAGE_SIZE + BORDER * 2
     model = unet.get_UNet(input_shape=(size, size, 3))
+    if LOAD_WEIGHTS:
+        latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
+        model.load_weights(latest).expect_partial()
     model.compile(
         optimizer=optimizer, 
         loss=loss,
         metrics = [tf.keras.metrics.MeanIoU(num_classes=7, name='mIoU', sparse_y_true=False, sparse_y_pred=False)])
 
-    if LOAD_WEIGHTS:
-        latest = tf.train.latest_checkpoint(CHECKPOINT_DIR)
-        model.load_weights(latest)
 
     model.fit(
         train,
         epochs=EPOCHS, 
         validation_data=validation, 
-        callbacks=[tensorboard_callback, model_checkpoint_callback],
-        class_weights=CLASS_WEIGHTS
+        callbacks=[tensorboard_callback, model_checkpoint_callback]
         )
 
     # TODO: implement model.fit()
