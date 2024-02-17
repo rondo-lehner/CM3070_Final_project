@@ -35,16 +35,16 @@ CLASS_WEIGHTS = {
         5: 9.244,    # barren_land
         6: 100.       # unknown - Note: not to scale with respect to the others but not that important for the overall classification
 }
-LOAD_WEIGHTS = True
-TRAIN_EPISODE = 2
+LOAD_WEIGHTS = False
+TRAIN_EPISODE = 3
 # VAL_SUBSPLITS = 5
 # VALIDATION_STEPS = 100//BATCH_SIZE//VAL_SUBSPLITS
 STEPS_PER_EPOCH = 563 // BATCH_SIZE
 CHECKPOINT_DIR = os.path.join(os.getcwd(), 'models', 'ckpt', 'unet', 'episode', str(TRAIN_EPISODE))
-CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{val_loss:.2f}-resumed-focalLoss.ckpt')
+CHECKPOINT_FILEPATH = os.path.join(CHECKPOINT_DIR, '{epoch:02d}-{val_loss:.2f}.ckpt')
 
 ## Tensorboard
-LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'unet', 'fit', str(TRAIN_EPISODE) + '-resumed-focalLoss')
+LOG_DIR = os.path.join(os.getcwd(), 'models', 'logs', 'unet', 'fit', str(TRAIN_EPISODE))
 UPDATE_FREQ = 'batch'
 
 def main():
@@ -64,7 +64,9 @@ def main():
         filepath=CHECKPOINT_FILEPATH,
         save_weights_only=True,
         monitor='val_loss',
-        save_freq='epoch'
+        save_freq='epoch',
+        save_best_only=True,
+        mode='min'
     )
 
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
