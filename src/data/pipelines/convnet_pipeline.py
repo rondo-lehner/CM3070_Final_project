@@ -89,6 +89,7 @@ class ConvnetPipeline():
             rates = [1, 1, 1, 1],
             padding = 'VALID'
         )
+
         ann_patches_flat = tf.reshape(ann_patches, shape=(-1, patch_size, patch_size, 1))
         central_pixels = tf.image.central_crop(ann_patches_flat, crop_fraction)
         dim = tf.reduce_prod(tf.shape(central_pixels)[1:])
@@ -109,8 +110,19 @@ class ConvnetPipeline():
         pixel_category_one_hot = tf.expand_dims(pixel_category_one_hot, axis=1)
         pixel_category_one_hot = tf.expand_dims(pixel_category_one_hot, axis=1)
 
+        # Return additional information in test set for evaluation
         if test:
-            return img_patches_flat, pixel_category_one_hot, images, datapoint['file_name']
+            # For ease of full-image evaluation return segmentation mask as one_hot
+            annotations = tf.one_hot(
+                annotations,
+                depth = 7,
+                on_value = 1,
+                off_value = 0,
+                axis = 3
+            )
+            annotations = tf.squeeze(annotations, axis=4)
+
+            return img_patches_flat, pixel_category_one_hot, images, annotations, datapoint['file_name'], 
         else:
             return img_patches_flat, pixel_category_one_hot
 
