@@ -24,6 +24,7 @@ class ConvnetPipeline():
         self.patch_size=patch_size
         self.patch_size_annotation=patch_size_annotation
         self.patch_stride=patch_stride
+        self.border = 20 # TODO: make configurable
 
         splits = self.load_processed_splits(slice_train, slice_valid, slice_test)
     
@@ -70,6 +71,14 @@ class ConvnetPipeline():
         crop_fraction = patch_size_annotation / patch_size
         
         images = tf.image.resize(datapoint['image'], (image_size, image_size))
+
+        # MirrorPad test images to allow "pixel-to-pixel" prediction
+        if test:
+            paddings = tf.constant([[0, 0], [self.border, self.border], [self.border, self.border], [0, 0]], dtype=tf.int32)
+            images = tf.raw_ops.MirrorPad(
+                input=images, paddings=paddings, mode='REFLECT', name=None
+            )
+
         img_patches = tf.image.extract_patches(
             images = images,
             sizes = [1, patch_size, patch_size, 1],
@@ -121,6 +130,10 @@ class ConvnetPipeline():
                 axis = 3
             )
             annotations = tf.squeeze(annotations, axis=4)
+
+            # Undo mirrorPadding 
+            crop_fraction = 1 - (self.border * 2) / self.image_size
+            images = tf.image.central_crop(images, crop_fraction)
 
             return img_patches_flat, pixel_category_one_hot, images, annotations, datapoint['file_name'], 
         else:
