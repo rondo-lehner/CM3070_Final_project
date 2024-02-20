@@ -9,3 +9,4 @@ click
 # for exploration in notebooks
 jupyterlab
 matplotlib
+tabulate
