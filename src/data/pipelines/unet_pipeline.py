@@ -32,7 +32,7 @@ def rgb_to_index(image):
         return indexed
 
 @tf.function
-def load_images(datapoint, image_size, border):
+def load_images(datapoint, image_size, border, test=False):
 
     images = tf.image.resize(datapoint['image'], (image_size, image_size))
 
@@ -57,7 +57,10 @@ def load_images(datapoint, image_size, border):
         input=images, paddings=paddings, mode='REFLECT', name=None
     )
 
-    return images, annotations
+    if test:
+        return images, annotations, datapoint['file_name']
+    else:
+        return images, annotations
 
 ## Main function
 def getUNetPipeline(
@@ -93,7 +96,7 @@ def getUNetPipeline(
     test_batches = (
         ds_test
         .batch(batch_size)
-        .map(lambda x: load_images(x, image_size, border), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(lambda x: load_images(x, image_size, border, True), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )    
     return (train_batches, validation_batches, test_batches)
