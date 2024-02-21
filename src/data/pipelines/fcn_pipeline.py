@@ -32,7 +32,7 @@ def rgb_to_index(image):
         return indexed
 
 @tf.function
-def load_images(datapoint, image_size):
+def load_images(datapoint, image_size, test=False):
 
     images = tf.image.resize(datapoint['image'], (image_size, image_size))
 
@@ -51,7 +51,10 @@ def load_images(datapoint, image_size):
     ## Pre-process as per tf documentation: https://www.tensorflow.org/api_docs/python/tf/keras/applications/vgg16/VGG16 (last accessed 23.01.2024)
     images = tf.keras.applications.vgg16.preprocess_input(images)
 
-    return images, annotations
+    if test:
+        return images, annotations, datapoint['file_name']
+    else:
+        return images, annotations
 
 ## Main function
 def getFCNPipeline(
@@ -86,7 +89,7 @@ def getFCNPipeline(
     test_batches = (
         ds_test
         .batch(batch_size)
-        .map(lambda x: load_images(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(lambda x: load_images(x, image_size, True), num_parallel_calls=tf.data.AUTOTUNE)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )    
     return (train_batches, validation_batches, test_batches)
