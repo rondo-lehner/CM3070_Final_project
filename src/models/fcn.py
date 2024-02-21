@@ -123,7 +123,7 @@ def get_fcn_16s(checkpoint_file_path=None):
 
     return tf.keras.Model(inputs=fcn_32s.input, outputs=output_layer)
 
-def get_fcn_8s(checkpoint_file_path):
+def get_fcn_8s(checkpoint_file_path=None):
     fcn_16s = get_fcn_16s()
     if checkpoint_file_path:
         fcn_16s.load_weights(checkpoint_file_path)
