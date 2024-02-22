@@ -10,3 +10,4 @@ click
 jupyterlab
 matplotlib
 tabulate
+scikit-learn
