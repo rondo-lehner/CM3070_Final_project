@@ -1,0 +1,1 @@
+{"mIoU": "0.35823637", "IoU": {"urban_land": "0.5906994", "agriculture_land": "0.738858", "rangeland": "0.011624146", "forest_land": "0.469289", "water": "0.37433493", "barren_land": "0.32284918", "unknown": "0.0"}, "avg_pred_ms": "103.78612916666667"}
