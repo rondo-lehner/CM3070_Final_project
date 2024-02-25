@@ -11,3 +11,4 @@ jupyterlab
 matplotlib
 tabulate
 scikit-learn
+pillow
