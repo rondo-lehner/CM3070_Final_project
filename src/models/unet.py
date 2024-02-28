@@ -163,13 +163,3 @@ def get_UNet(n_downsampling=4, input_shape=(420, 420, 3)):
     )(blocks[-1])
 
     return tf.keras.Model(inputs=inputs, outputs=scored_layer)
-
-    
-
-
-    
-
-
-
-def upsample_block(input_size):
-    pass
