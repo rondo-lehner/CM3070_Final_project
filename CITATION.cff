@@ -1,0 +1,20 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  Semantic Land Cover Image Segmentation - UoL BSc Computer
+  Science Final Year Project
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Rondo Walter
+    family-names: Lehner
+    email: rwl4@student.london.ac.uk
+repository-code: 'https://github.com/rondo-lehner/CM3070_Final_project'
+abstract: >-
+  Implementation, training and evaluation of 3 models
+  ('early convnet', FCN-8s and U-Net) on the Land Cover
+  Classification dataset from the Deep Globe 2018 challenge.
