@@ -117,6 +117,7 @@ def get_UNet(n_downsampling=4, input_shape=(420, 420, 3)):
 
     blocks = []
 
+    ## Assemble Contracting Path
     for i, filter_size in enumerate(filter_sizes):
         blocks.append(ContractingBlock(
             filter_size,
@@ -149,6 +150,7 @@ def get_UNet(n_downsampling=4, input_shape=(420, 420, 3)):
             )
         )(x)
 
+    ## Assemble Expansive Path
     for i, filter_size in enumerate(reversed(filter_sizes)):
         blocks.append(ExpansiveBlock(filter_size)(
             x if i == 0 else blocks[-1],                                # input from previous layer
